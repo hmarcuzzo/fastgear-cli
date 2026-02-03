@@ -1,0 +1,14 @@
+default_stages: [pre-commit]
+
+default_language_version:
+  python: python3.12
+
+repos:
+  # Run the Ruff linter.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.9
+    hooks:
+      # Linter
+      - id: ruff
+      # Formatter
+      - id: ruff-format
