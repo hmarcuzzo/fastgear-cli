@@ -1,10 +1,9 @@
 from pathlib import Path
 
+from fg.configs.settings import ROOT_DIR
+from fg.core.render import render_template_dir
 
-def create_project_structure(project_dir: Path) -> None:
-    src_dir = project_dir / "src"
-    main_file = src_dir / "main.py"
 
-    project_dir.mkdir(exist_ok=False)
-    src_dir.mkdir()
-    main_file.touch()
+def create_project(template_name: str, context: dict) -> None:
+    template_root = ROOT_DIR / "templates" / template_name
+    render_template_dir(template_root, Path.cwd(), context)

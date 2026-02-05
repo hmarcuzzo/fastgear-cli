@@ -1,0 +1,59 @@
+import os
+import time
+
+import uvicorn
+from fastapi import FastAPI
+from fastgear.applications import apply_utils
+from fastgear.utils import LoggerUtils
+from starlette.middleware.cors import CORSMiddleware
+
+from src.config.settings import settings
+from src.modules.app import app_routers
+
+
+def create_app() -> FastAPI:
+    """
+    Application factory for creating the FastAPI application.
+    """
+    app = FastAPI(title="{{ project_title }}", version="0.1.0")
+
+    # CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Set the default timezone of the application
+    os.environ["TZ"] = settings.APP_TZ
+    time.tzset()
+
+    # Configure logging
+    LoggerUtils.configure_logging(logging.DEBUG)
+
+    # Register all routers
+    app.include_router(app_routers)
+
+    # Register all utils
+    apply_utils(
+        app,
+        ["http_exceptions_handler"],
+        add_custom_error_response=not settings.IS_PRODUCTION,
+    )
+
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "src.main:app",
+        host="0.0.0.0",
+        port=settings.APP_PORT,
+        reload=not settings.IS_PRODUCTION,
+        use_colors=not settings.IS_PRODUCTION,
+        workers=5,
+    )
