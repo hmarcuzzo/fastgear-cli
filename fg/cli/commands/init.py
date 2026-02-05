@@ -1,7 +1,7 @@
 import typer
 
 from fg.cli.prompts.project import ask_project_name
-from fg.core.filesystem import create_project_structure
+from fg.core.filesystem import create_project
 from fg.core.models import ProjectInitConfig
 
 init_app = typer.Typer(help="Project initialization command")
@@ -17,7 +17,8 @@ def init():
     config = ProjectInitConfig(name=project_name)
 
     try:
-        create_project_structure(config.project_dir)
+        context = {"project_name": config.name, "project_title": config.name.title()}
+        create_project("default_project", context)
     except FileExistsError:
         typer.secho(
             f"Directory '{config.project_dir}' already exists.",
