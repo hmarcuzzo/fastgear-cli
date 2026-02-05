@@ -1,6 +1,6 @@
 import typer
 
-from fastgear_cli.cli.commands.init import init_app
+from fg.cli.commands.init import init_app
 
 app = typer.Typer(help="Fastgear code generator")
 

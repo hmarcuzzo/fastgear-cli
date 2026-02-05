@@ -22,8 +22,11 @@ dev = [
     "ruff>=0.15.0",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["fg"]
+
 [project.scripts]
-fastgear-cli = "fastgear_cli.cli.app:main"
+fg = "fg.cli.app:main"
 
 [build-system]
 requires = ["hatchling"]
