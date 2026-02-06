@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from fg.configs.settings import ROOT_DIR
-from fg.core.render import render_template_dir
+from fastgear_cli.configs.settings import ROOT_DIR
+from fastgear_cli.core.render import render_template_dir
 
 
 def create_project(template_name: str, context: dict, conditional_files: dict) -> None:
