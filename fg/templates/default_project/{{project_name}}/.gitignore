@@ -185,4 +185,4 @@ fabric.properties
 .ruff_cache/*
 
 # Application
-src/config/toml/.secrets.toml
+src/config/toml/env.*.toml

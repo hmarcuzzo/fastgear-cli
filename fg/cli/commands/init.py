@@ -17,8 +17,17 @@ def init():
     config = ProjectInitConfig(name=project_name)
 
     try:
-        context = {"project_name": config.name, "project_title": config.name.title()}
-        create_project("default_project", context)
+        context = {
+            "project_name": config.name,
+            "project_title": config.name.title(),
+            "use_pre_commit": True,
+            "use_docker": True,
+        }
+        conditional_files: dict[str, str] = {
+            ".pre-commit-config.yaml.j2": "use_pre_commit",
+        }
+
+        create_project("default_project", context, conditional_files)
     except FileExistsError:
         typer.secho(
             f"Directory '{config.project_dir}' already exists.",

@@ -1,0 +1,93 @@
+[project]
+name = "{{ project_name }}"
+version = "0.1.0"
+description = "Project description goes here."
+authors = [
+    { name = "Your Name", email = "your_email@email.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.128.0",
+    "fastgear>=0.4.0",
+    "loguru>=0.7.3",
+    "pydantic>=2.12.5",
+    "uvicorn>=0.40.0",
+]
+
+
+[tool.uv]
+default-groups = []
+
+[dependency-groups]
+dev = [
+    # ----------------------------------------
+    # Code quality
+    # ----------------------------------------
+    {%- if use_pre_commit %}
+    "pre-commit>=4.5.1",
+    {%- endif %}
+    "ruff>=0.15.0",
+]
+
+
+# ==== Ruff ====
+[tool.ruff]
+fix = true
+line-length = 100
+indent-width = 4
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+fixable = ["ALL"]  # Fix all fixable issues
+select = ["ALL"]   # Select all rules available
+extend-select = ["I"]
+ignore = [
+    "A005",
+    "COM812",
+    "C901",
+    "DTZ005",
+    "E501",
+    "FIX002",
+    "F811",
+    "G004",
+    "PLC0415",
+    "PERF203",
+    "PGH003",
+    "N818",
+    "SLF001",
+    "ARG",
+    "ANN",
+    "B",
+    "D",
+    "EM",
+    "INP",
+    "RUF",
+    "PLR",
+    "S",
+    "TD",
+    "TRY"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [
+    "F401",
+    "PLR2004",
+    "PT006",
+    "N806"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

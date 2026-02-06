@@ -3,7 +3,9 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
-def render_template_dir(template_root: Path, output_root: Path, context: dict) -> None:
+def render_template_dir(
+    template_root: Path, output_root: Path, context: dict, conditional_files: dict
+) -> None:
     env = Environment(
         loader=FileSystemLoader(str(template_root)),
         autoescape=select_autoescape(enabled_extensions=()),
@@ -15,6 +17,9 @@ def render_template_dir(template_root: Path, output_root: Path, context: dict) -
 
         # jump directories
         if tpl_path.is_dir():
+            continue
+
+        if not _should_render_file(tpl_path.name, context, conditional_files):
             continue
 
         # render template
@@ -29,3 +34,10 @@ def render_template_dir(template_root: Path, output_root: Path, context: dict) -
             out_path.write_text(template.render(**context), encoding="utf-8")
         else:
             out_path.write_bytes(tpl_path.read_bytes())
+
+
+def _should_render_file(file_name: str, context: dict, conditional_files: dict) -> bool:
+    condition_key = conditional_files.get(file_name)
+    if condition_key is None:
+        return True
+    return bool(context.get(condition_key))
