@@ -1,8 +1,8 @@
 import typer
 
-from fg.cli.prompts.project import ask_project_name
-from fg.core.filesystem import create_project
-from fg.core.models import ProjectInitConfig
+from fastgear_cli.cli.prompts.project import ask_project_name
+from fastgear_cli.core.filesystem import create_project
+from fastgear_cli.core.models import ProjectInitConfig
 
 init_app = typer.Typer(help="Project initialization command")
 
