@@ -1,0 +1,76 @@
+# {{ project_title }}
+
+## Prerequisites
+
+{%- if use_docker %}
+- **For Docker execution**: Docker and Docker Compose installed
+{%- endif %}
+- **For manual execution**: Python 3.13+ and [uv](https://github.com/astral-sh/uv) package manager
+
+## Configuration
+
+Before running the project, you need to configure the environment variables:
+
+1. Navigate to `src/config/toml/` directory
+2. Configure the `env.toml` file with your settings (app settings, etc.)
+
+{%- if use_docker %}
+## Running with Docker (Recommended)
+
+1. Navigate to the docker directory:
+   ```bash
+   cd docker
+   ```
+
+2. Start the application using Docker Compose:
+   ```bash
+   make up-local
+   ```
+
+   This command will:
+    - Merge configuration files from `src/config/toml/`
+    - Build and start the container in detached mode
+
+3. Access the application at `http://localhost:8000`
+
+4. View API documentation at `http://localhost:8000/docs` or `http://localhost:8000/redoc`
+
+### Other Docker Commands
+
+- **Build the containers**:
+  ```bash
+  make build-local
+  ```
+
+- **Stop the application**:
+  ```bash
+  make down-local
+  ```
+
+- **Run tests**:
+  ```bash
+  make test-local
+  ```
+{%- endif %}
+
+## Running Manually
+
+### Installation
+
+1. Install dependencies using uv:
+   ```bash
+   uv sync
+   ```
+
+### Running the Application
+
+1. Start the application:
+   ```bash
+   uv run src/main.py
+   ```
+
+2. The application will start on the port specified in your configuration (default: 8000)
+
+3. Access the application at `http://localhost:8000`
+
+4. View API documentation at `http://localhost:8000/docs` or `http://localhost:8000/redoc`
