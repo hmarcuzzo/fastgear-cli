@@ -8,6 +8,7 @@ from fastgear.utils import LoggerUtils
 from starlette.middleware.cors import CORSMiddleware
 
 from src.config.settings import settings
+from src.core.utils import LoggerUtils
 from src.modules.app import app_routers
 
 
@@ -31,7 +32,7 @@ def create_app() -> FastAPI:
     time.tzset()
 
     # Configure logging
-    LoggerUtils.configure_logging(logging.DEBUG)
+    LoggerUtils.configure_logging(settings.APP_ENV)
 
     # Register all routers
     app.include_router(app_routers)
