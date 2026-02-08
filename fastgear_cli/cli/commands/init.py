@@ -34,25 +34,14 @@ def init(
     )
 
     try:
-        context = {
-            "project_name": config.project_name,
-            "project_title": config.project_title,
-            "use_docker": config.use_docker,
-        }
-        conditional_files = {
-            ".dockerignore": context["use_docker"],
-        }
-        conditional_dirs = {
-            "docker": context["use_docker"],
-        }
-
         create_project(
             "new_project",
             config.base_dir,
-            context,
-            conditional_files,
-            conditional_dirs,
+            config.context,
+            config.conditional_files,
+            config.conditional_dirs,
         )
+
     except FileExistsError:
         typer.secho(
             f"Directory '{config.project_dir}' already exists.",
