@@ -6,6 +6,7 @@ from fastgear_cli.core.render import render_template_dir
 
 def create_project(
     template_name: str,
+    base_dir: Path,
     context: dict,
     conditional_files: dict[str, bool] | None = None,
     conditional_dirs: dict[str, bool] | None = None,
@@ -14,4 +15,4 @@ def create_project(
     conditional_dirs = conditional_dirs or {}
 
     template_root = ROOT_DIR / "templates" / template_name
-    render_template_dir(template_root, Path.cwd(), context, conditional_files, conditional_dirs)
+    render_template_dir(template_root, base_dir, context, conditional_files, conditional_dirs)
