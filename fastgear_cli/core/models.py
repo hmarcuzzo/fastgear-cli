@@ -17,3 +17,23 @@ class ProjectInitConfig(BaseModel):
     @property
     def project_dir(self) -> Path:
         return self.base_dir / self.project_name
+
+    @property
+    def context(self) -> dict:
+        return {
+            "project_name": self.project_name,
+            "project_title": self.project_title,
+            "use_docker": self.use_docker,
+        }
+
+    @property
+    def conditional_files(self) -> dict:
+        return {
+            ".dockerignore": self.use_docker,
+        }
+
+    @property
+    def conditional_dirs(self) -> dict:
+        return {
+            "docker": self.use_docker,
+        }
