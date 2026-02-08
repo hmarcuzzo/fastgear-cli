@@ -1,0 +1,20 @@
+services:
+  {{ project_name }}_app_local:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        MODE: local
+    image: {{ project_name }}_app_local
+    container_name: {{ project_name }}_app_local
+    env_file:
+      - .env
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    volumes:
+      - ../src:/app/src
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+
+volumes:
+  {{ project_name }}-app-data:

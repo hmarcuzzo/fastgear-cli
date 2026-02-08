@@ -27,6 +27,9 @@ Before running the project, you need to configure the environment variables:
    make up-local
    ```
 
+   - **Notes**:
+     - You have to sync the dependencies using `uv sync` before running the Docker container for the first time.
+
    This command will:
     - Merge configuration files from `src/config/toml/`
     - Build and start the container in detached mode
