@@ -4,7 +4,11 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
 def render_template_dir(
-    template_root: Path, output_root: Path, context: dict, conditional_files: dict
+    template_root: Path,
+    output_root: Path,
+    context: dict,
+    conditional_files: dict,
+    conditional_dirs: dict,
 ) -> None:
     env = Environment(
         loader=FileSystemLoader(str(template_root)),
@@ -15,11 +19,11 @@ def render_template_dir(
     for tpl_path in template_root.rglob("*"):
         rel = tpl_path.relative_to(template_root)
 
-        # jump directories
-        if tpl_path.is_dir():
-            continue
-
-        if not _should_render_file(tpl_path.name, context, conditional_files):
+        if (
+            tpl_path.is_dir()
+            or not _should_render_dir(rel, conditional_dirs)
+            or not _should_render_file(tpl_path.name, conditional_files)
+        ):
             continue
 
         # render template
@@ -36,8 +40,16 @@ def render_template_dir(
             out_path.write_bytes(tpl_path.read_bytes())
 
 
-def _should_render_file(file_name: str, context: dict, conditional_files: dict) -> bool:
-    condition_key = conditional_files.get(file_name)
-    if condition_key is None:
+def _should_render_dir(rel_path: Path, conditional_dirs: dict) -> bool:
+    for part in rel_path.parts[:-1]:
+        if part in conditional_dirs and not conditional_dirs[part]:
+            return False
+
+    return True
+
+
+def _should_render_file(file_name: str, conditional_files: dict) -> bool:
+    if file_name not in conditional_files:
         return True
-    return bool(context.get(condition_key))
+
+    return conditional_files.get(file_name)
