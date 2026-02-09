@@ -22,6 +22,12 @@ dev = [
     "pre-commit>=4.5.1",
     "ruff>=0.15.0",
 ]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-testdox>=3.1.0",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["fastgear_cli"]
@@ -94,3 +100,10 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+
+# ==== pytest ====
+[tool.pytest.ini_options]
+minversion = "8.0.0"
+addopts = "-ra -q --force-testdox --cov=fastgear_cli --cov-branch --cov-report=html"
+testpaths = ["tests/"]
