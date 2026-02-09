@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import typer
@@ -48,6 +49,26 @@ def init(
             fg=typer.colors.RED,
         )
         raise typer.Exit(code=1)
+
+    typer.secho("📦 Generating uv.lock...", fg=typer.colors.CYAN)
+    try:
+        subprocess.run(
+            ["uv", "lock"],
+            cwd=config.project_dir,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        typer.secho(
+            f"Failed to generate uv.lock: {error.stderr}",
+            fg=typer.colors.YELLOW,
+        )
+    except FileNotFoundError:
+        typer.secho(
+            "uv not found. Please install uv to generate the lock file.",
+            fg=typer.colors.YELLOW,
+        )
 
     typer.secho(
         f"\n🎉  Project '{config.project_name}' created successfully!",
