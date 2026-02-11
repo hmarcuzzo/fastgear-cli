@@ -1,0 +1,29 @@
+name: Audit
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  audit:
+    name: Pip Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python and uv
+        uses: ./.github/actions/setup-python-uv
+        with:
+          python-version: "3.14"
+
+      - name: uv sync (runtime deps)
+        run: |
+          uv sync --frozen
+
+      - name: Run pip-audit
+        run: |
+          uvx pip-audit -r <(uv export --format requirements-txt)
