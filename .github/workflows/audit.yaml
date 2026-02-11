@@ -26,4 +26,5 @@ jobs:
 
       - name: Run pip-audit
         run: |
-          uvx pip-audit -r <(uv export --format requirements-txt)
+          uv export --format requirements-txt --no-emit-project > requirements-audit.txt
+          uvx pip-audit --strict -r requirements-audit.txt
