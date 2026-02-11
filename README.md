@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/gh/hmarcuzzo/fastgear-cli/graph/badge.svg?token=0QNZTA5332)](https://codecov.io/gh/hmarcuzzo/fastgear-cli)
