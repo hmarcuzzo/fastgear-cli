@@ -30,11 +30,16 @@ def render_template_dir(
         rendered_rel = env.from_string(str(rel)).render(**context)
         out_path = output_root / rendered_rel
 
+        if tpl_path.name.endswith(".j2"):
+            out_path = out_path.with_suffix("")  # remove .j2
+
+        if out_path.exists():
+            continue
+
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
         if tpl_path.name.endswith(".j2"):
             template = env.get_template(str(rel))
-            out_path = out_path.with_suffix("")  # remove .j2
             out_path.write_text(template.render(**context), encoding="utf-8")
         else:
             out_path.write_bytes(tpl_path.read_bytes())
