@@ -41,8 +41,25 @@ def render_template_dir(
 
 
 def _should_render_dir(rel_path: Path, conditional_dirs: dict) -> bool:
-    for part in rel_path.parts[:-1]:
-        if part in conditional_dirs and not conditional_dirs[part]:
+    parts = rel_path.parts
+    if len(parts) <= 1:
+        return True
+
+    dir_parts = parts[1:-1]
+    if not dir_parts:
+        return True
+
+    for i in range(len(dir_parts)):
+        partial_path = "/".join(dir_parts[: i + 1])
+        single_part = dir_parts[i]
+
+        if partial_path in conditional_dirs and not conditional_dirs[partial_path]:
+            return False
+        if (
+            single_part in conditional_dirs
+            and partial_path not in conditional_dirs
+            and not conditional_dirs[single_part]
+        ):
             return False
 
     return True
