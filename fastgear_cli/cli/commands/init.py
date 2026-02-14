@@ -1,10 +1,12 @@
 import subprocess
 from pathlib import Path
 
+import questionary
 import typer
 
 from fastgear_cli.cli.prompts.project import (
     ask_agent_tools,
+    ask_ci_provider,
     ask_project_name,
     confirm_project_title,
 )
@@ -29,8 +31,9 @@ def init(
 
     project_name = ask_project_name()
     project_title = confirm_project_title(project_name)
-    use_docker = typer.confirm("Use Docker?", default=True)
+    use_docker = questionary.confirm("Use Docker?", default=True).ask()
     agent_tools = ask_agent_tools()
+    ci_provider = ask_ci_provider()
 
     config = ProjectInitConfig(
         base_dir=base_dir,
@@ -38,6 +41,7 @@ def init(
         project_title=project_title,
         use_docker=use_docker,
         agent_tools=agent_tools,
+        ci_provider=ci_provider,
     )
 
     try:

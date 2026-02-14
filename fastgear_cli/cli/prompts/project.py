@@ -1,6 +1,6 @@
 import questionary
 
-from fastgear_cli.core.constants.enums.agent_tools_enum import AgentToolsEnum
+from fastgear_cli.core.constants.enums import AgentToolsEnum, CIProviderEnum
 
 
 def ask_project_name() -> str:
@@ -33,3 +33,18 @@ def ask_agent_tools() -> list[str]:
     ).ask()
 
     return agent_choices or []
+
+
+def ask_ci_provider() -> str | None:
+    use_ci = questionary.confirm(
+        "Use CI/CD pipeline?",
+        default=True,
+    ).ask()
+
+    if not use_ci:
+        return None
+
+    return questionary.select(
+        "Select CI/CD provider:",
+        choices=[CIProviderEnum.GITHUB_ACTIONS],
+    ).ask()
