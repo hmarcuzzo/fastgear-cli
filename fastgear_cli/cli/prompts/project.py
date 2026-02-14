@@ -1,5 +1,7 @@
 import questionary
 
+from fastgear_cli.core.constants.enums.agent_tools_enum import AgentToolsEnum
+
 
 def ask_project_name() -> str:
     return questionary.text(
@@ -14,3 +16,20 @@ def confirm_project_title(project_name: str) -> str:
         "Project title:",
         default=project_title,
     ).ask()
+
+
+def ask_agent_tools() -> list[str]:
+    use_agent = questionary.confirm(
+        "Use AI agent tools?",
+        default=False,
+    ).ask()
+
+    if not use_agent:
+        return []
+
+    agent_choices = questionary.checkbox(
+        "Select agent tools:",
+        choices=[AgentToolsEnum.GITHUB_COPILOT],
+    ).ask()
+
+    return agent_choices or []
