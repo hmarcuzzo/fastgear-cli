@@ -1,7 +1,7 @@
 [project]
 name = "fastgear-cli"
 version = "0.1.0"
-description = "CLI tool for generating FastAPI boilerplate code using the fastgear library"
+description = "CLI tool for generating FastAPI boilerplate code using the FastGear library"
 authors = [
     { name = "Henrique Marcuzzo", email = "henrique.souza.m06@gmail.com"}
 ]
