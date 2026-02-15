@@ -259,3 +259,97 @@ class TestInitCommand:
         assert result.exit_code == 0
         assert "created successfully" in result.output
         assert project_name in result.output
+
+    @pytest.mark.it("✅  Should show files without creating them in dry-run mode")
+    def test_dry_run_shows_files_without_creating(
+        self,
+        mocker: MagicMock,
+        temp_directory: Path,
+        project_name: str,
+        project_title: str,
+    ):
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.ask_project_name",
+            return_value=project_name,
+        )
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.confirm_project_title",
+            return_value=project_title,
+        )
+        _mock_questionary_confirm(mocker, return_value=True)
+        mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
+        mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        mock_files = [
+            temp_directory / "test-project" / "pyproject.toml",
+            temp_directory / "test-project" / "README.md",
+        ]
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.create_project",
+            return_value=mock_files,
+        )
+
+        result = runner.invoke(init_app, [str(temp_directory), "--dry-run"])
+
+        assert result.exit_code == 0
+        assert "Dry run mode" in result.output
+        assert "Files that would be created" in result.output
+        assert "pyproject.toml" in result.output
+        assert "README.md" in result.output
+        assert "Total: 2 file(s)" in result.output
+
+    @pytest.mark.it("✅  Should not run uv lock in dry-run mode")
+    def test_dry_run_does_not_run_uv_lock(
+        self,
+        mocker: MagicMock,
+        temp_directory: Path,
+        project_name: str,
+        project_title: str,
+    ):
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.ask_project_name",
+            return_value=project_name,
+        )
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.confirm_project_title",
+            return_value=project_title,
+        )
+        _mock_questionary_confirm(mocker, return_value=True)
+        mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
+        mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        mocker.patch("fastgear_cli.cli.commands.init.create_project", return_value=[])
+        mock_subprocess = mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
+
+        result = runner.invoke(init_app, [str(temp_directory), "--dry-run"])
+
+        assert result.exit_code == 0
+        mock_subprocess.assert_not_called()
+        assert "Generating uv.lock" not in result.output
+
+    @pytest.mark.it("✅  Should pass dry_run=True to create_project")
+    def test_dry_run_passes_flag_to_create_project(
+        self,
+        mocker: MagicMock,
+        temp_directory: Path,
+        project_name: str,
+        project_title: str,
+    ):
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.ask_project_name",
+            return_value=project_name,
+        )
+        mocker.patch(
+            "fastgear_cli.cli.commands.init.confirm_project_title",
+            return_value=project_title,
+        )
+        _mock_questionary_confirm(mocker, return_value=True)
+        mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
+        mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        mock_create = mocker.patch(
+            "fastgear_cli.cli.commands.init.create_project",
+            return_value=[],
+        )
+
+        runner.invoke(init_app, [str(temp_directory), "-n"])
+
+        call_kwargs = mock_create.call_args.kwargs
+        assert call_kwargs["dry_run"] is True

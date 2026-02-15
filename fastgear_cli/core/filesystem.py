@@ -10,9 +10,18 @@ def create_project(
     context: dict,
     conditional_files: dict[str, bool] | None = None,
     conditional_dirs: dict[str, bool] | None = None,
-) -> None:
+    *,
+    dry_run: bool = False,
+) -> list[Path]:
     conditional_files = conditional_files or {}
     conditional_dirs = conditional_dirs or {}
 
     template_root = ROOT_DIR / "templates" / template_name
-    render_template_dir(template_root, base_dir, context, conditional_files, conditional_dirs)
+    return render_template_dir(
+        template_root,
+        base_dir,
+        context,
+        conditional_files,
+        conditional_dirs,
+        dry_run=dry_run,
+    )

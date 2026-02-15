@@ -79,6 +79,7 @@ ignore = [
     "B",
     "D",
     "EM",
+    "FBT",
     "INP",
     "RUF",
     "PLR",
@@ -90,7 +91,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**.py" = [
     "F401",
-    "FBT001",
     "PLR2004",
     "PT006",
     "N806"

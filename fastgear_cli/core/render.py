@@ -9,12 +9,16 @@ def render_template_dir(
     context: dict,
     conditional_files: dict,
     conditional_dirs: dict,
-) -> None:
+    *,
+    dry_run: bool = False,
+) -> list[Path]:
     env = Environment(
         loader=FileSystemLoader(str(template_root)),
         autoescape=select_autoescape(enabled_extensions=()),
         keep_trailing_newline=True,
     )
+
+    rendered_files: list[Path] = []
 
     for tpl_path in template_root.rglob("*"):
         rel = tpl_path.relative_to(template_root)
@@ -26,14 +30,18 @@ def render_template_dir(
         ):
             continue
 
-        # render template
         rendered_rel = env.from_string(str(rel)).render(**context)
         out_path = output_root / rendered_rel
 
         if tpl_path.name.endswith(".j2"):
-            out_path = out_path.with_suffix("")  # remove .j2
+            out_path = out_path.with_suffix("")
 
         if out_path.exists():
+            continue
+
+        rendered_files.append(out_path)
+
+        if dry_run:
             continue
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -43,6 +51,8 @@ def render_template_dir(
             out_path.write_text(template.render(**context), encoding="utf-8")
         else:
             out_path.write_bytes(tpl_path.read_bytes())
+
+    return rendered_files
 
 
 def _should_render_dir(rel_path: Path, conditional_dirs: dict) -> bool:
