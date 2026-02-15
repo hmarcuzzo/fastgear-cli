@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: PyPI
-      url: https://pypi.org/project/fastgear/
+      url: https://pypi.org/project/fastgear-cli/
 
     steps:
       - name: Checkout code
