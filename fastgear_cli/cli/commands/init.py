@@ -37,7 +37,7 @@ def init(
     files = _generate_project(config, dry_run=dry_run)
 
     if dry_run:
-        _display_dry_run_output(files, base_dir)
+        FileTreeUtils.display_dry_run_output(files, base_dir)
         return
 
     _run_uv_lock(config.project_dir)
@@ -81,13 +81,6 @@ def _generate_project(config: ProjectInitConfig, *, dry_run: bool) -> list[Path]
             fg=typer.colors.RED,
         )
         raise typer.Exit(code=1)
-
-
-def _display_dry_run_output(files: list[Path], base_dir: Path) -> None:
-    typer.secho("\n🔍 Dry run mode - no files created\n", fg=typer.colors.YELLOW)
-    typer.secho("Files that would be created:", fg=typer.colors.CYAN)
-    FileTreeUtils.print_file_tree(files, base_dir)
-    typer.secho(f"\nTotal: {len(files)} file(s)", fg=typer.colors.CYAN)
 
 
 def _run_uv_lock(project_dir: Path) -> None:
