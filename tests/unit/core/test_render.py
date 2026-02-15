@@ -122,8 +122,8 @@ class TestRenderTemplateDir:
             {"docker": False},
         )
 
-        assert not (output_root / "docker").exists()
-        assert (output_root / "src" / "app.py").exists()
+        assert not (output_root / "project" / "docker").exists()
+        assert (output_root / "project" / "src" / "app.py").exists()
 
     @pytest.mark.it("✅  Should include files in enabled conditional directories")
     def test_includes_files_in_enabled_conditional_dirs(
@@ -140,8 +140,8 @@ class TestRenderTemplateDir:
             {"docker": True},
         )
 
-        assert (output_root / "docker" / "Dockerfile").exists()
-        assert (output_root / "src" / "app.py").exists()
+        assert (output_root / "project" / "docker" / "Dockerfile").exists()
+        assert (output_root / "project" / "src" / "app.py").exists()
 
     @pytest.mark.it("✅  Should skip disabled conditional files")
     def test_skips_disabled_conditional_files(
@@ -221,7 +221,7 @@ class TestShouldRenderDir:
 
     @pytest.mark.it("✅  Should return True when conditional dir is enabled")
     def test_returns_true_when_conditional_dir_enabled(self):
-        rel_path = Path("docker/Dockerfile")
+        rel_path = Path("project/docker/Dockerfile")
 
         result = _should_render_dir(rel_path, {"docker": True})
 
@@ -229,7 +229,7 @@ class TestShouldRenderDir:
 
     @pytest.mark.it("✅  Should return False when conditional dir is disabled")
     def test_returns_false_when_conditional_dir_disabled(self):
-        rel_path = Path("docker/Dockerfile")
+        rel_path = Path("project/docker/Dockerfile")
 
         result = _should_render_dir(rel_path, {"docker": False})
 
@@ -237,7 +237,7 @@ class TestShouldRenderDir:
 
     @pytest.mark.it("✅  Should check parent directories in path")
     def test_checks_parent_directories_in_path(self):
-        rel_path = Path("docker/configs/settings.yml")
+        rel_path = Path("project/docker/configs/settings.yml")
 
         result = _should_render_dir(rel_path, {"docker": False})
 
@@ -245,7 +245,7 @@ class TestShouldRenderDir:
 
     @pytest.mark.it("✅  Should return True for deeply nested enabled dir")
     def test_returns_true_for_deeply_nested_enabled_dir(self):
-        rel_path = Path("docker/configs/settings.yml")
+        rel_path = Path("project/docker/configs/settings.yml")
 
         result = _should_render_dir(rel_path, {"docker": True, "configs": True})
 
@@ -253,7 +253,7 @@ class TestShouldRenderDir:
 
     @pytest.mark.it("✅  Should return False when any parent dir is disabled")
     def test_returns_false_when_any_parent_disabled(self):
-        rel_path = Path("docker/configs/settings.yml")
+        rel_path = Path("project/docker/configs/settings.yml")
 
         result = _should_render_dir(rel_path, {"docker": True, "configs": False})
 

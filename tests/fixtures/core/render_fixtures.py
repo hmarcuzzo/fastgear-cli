@@ -49,10 +49,12 @@ def template_with_nested_dirs(template_root: Path) -> Path:
 
 @pytest.fixture
 def template_with_conditional_dir(template_root: Path) -> Path:
-    docker_dir = template_root / "docker"
+    project_dir = template_root / "project"
+    project_dir.mkdir()
+    docker_dir = project_dir / "docker"
     docker_dir.mkdir()
     (docker_dir / "Dockerfile").write_text("FROM python:3.11")
-    src_dir = template_root / "src"
+    src_dir = project_dir / "src"
     src_dir.mkdir()
     (src_dir / "app.py").write_text("print('app')")
     return template_root
