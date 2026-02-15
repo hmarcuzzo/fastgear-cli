@@ -10,8 +10,8 @@ class ProjectInitConfig(BaseModel):
     project_name: str = Field(..., min_length=1)
     project_title: str = Field(..., min_length=1)
     use_docker: bool = Field(default=True)
-    agent_tools: list[AgentToolsEnum] = Field(default_factory=list)
-    ci_provider: CIProviderEnum | None = Field(default=None)
+    agent_tools: list[AgentToolsEnum | str] = Field(default_factory=list)
+    ci_provider: CIProviderEnum | str | None = Field(default=None)
 
     @field_validator("project_name")
     @classmethod
