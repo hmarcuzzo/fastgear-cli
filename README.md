@@ -1,9 +1,23 @@
-# FastGear CLI
-[![codecov](https://codecov.io/gh/hmarcuzzo/fastgear-cli/graph/badge.svg?token=0QNZTA5332)](https://codecov.io/gh/hmarcuzzo/fastgear-cli)
-[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+<h1>FastGear CLI</h1>
 
-A powerful CLI tool to bootstrap **FastAPI** projects powered by the [FastGear](https://github.com/hmarcuzzo/fastgear) library — with best practices, pre-configured templates, and modern development tools out of the box.
+<a href="https://github.com/hmarcuzzo/fastgear-cli" target="_blank">
+    <img src="https://img.shields.io/badge/Python-3.13 | 3.14-40cd60" alt="Supported Python Versions"/>
+</a>
+<a href="https://pypi.org/project/fastgear-cli/" target="_blank">
+    <img src="https://img.shields.io/pypi/v/fastgear-cli?color=%2334D058&label=pypi%20package" alt="PyPi Version"/>
+</a>
+<a href="https://github.com/hmarcuzzo/fastgear-cli/actions/workflows/tests.yaml" target="_blank">
+    <img src="https://github.com/hmarcuzzo/fastgear-cli/actions/workflows/tests.yaml/badge.svg" alt="Tests">
+</a>
+<a href="https://codecov.io/gh/hmarcuzzo/fastgear-cli" target="_blank">
+    <img src="https://codecov.io/gh/hmarcuzzo/fastgear-cli/graph/badge.svg?token=0QNZTA5332" alt="codecov">
+</a>
+
+<hr>
+A powerful CLI tool to bootstrap <strong>FastAPI</strong> projects powered by the <a href="https://github.com/hmarcuzzo/fastgear">FastGear</a> library — with best practices, pre-configured templates, and modern development tools out of the box.
+<hr>
+</div>
 
 ## 🎯 What is FastGear CLI?
 
