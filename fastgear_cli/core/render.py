@@ -3,7 +3,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
-def render_template_dir(
+def render_template(
     template_root: Path,
     output_root: Path,
     context: dict,
