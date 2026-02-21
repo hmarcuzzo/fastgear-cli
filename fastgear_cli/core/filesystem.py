@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastgear_cli.configs.settings import ROOT_DIR
-from fastgear_cli.core.render import render_template_dir
+from fastgear_cli.core.render import render_template
 
 
 def create_project(
@@ -17,7 +17,7 @@ def create_project(
     conditional_dirs = conditional_dirs or {}
 
     template_root = ROOT_DIR / "templates" / template_name
-    return render_template_dir(
+    return render_template(
         template_root,
         base_dir,
         context,
