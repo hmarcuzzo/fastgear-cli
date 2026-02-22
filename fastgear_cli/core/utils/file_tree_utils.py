@@ -6,7 +6,7 @@ import typer
 class FileTreeUtils:
     @staticmethod
     def display_dry_run_output(files: list[Path], base_dir: Path) -> None:
-        typer.secho("\n🔍 Dry run mode - no files created\n", fg=typer.colors.YELLOW)
+        typer.secho("\n🔍  Dry run mode - no files created\n", fg=typer.colors.YELLOW)
 
         typer.secho("Files that would be created:", fg=typer.colors.CYAN)
         FileTreeUtils.print_file_tree(files, base_dir)

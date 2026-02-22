@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import typer
+
 from fastgear_cli.configs.settings import ROOT_DIR
 from fastgear_cli.core.render import render_template
 
@@ -17,7 +19,7 @@ def create_project(
     conditional_dirs = conditional_dirs or {}
 
     template_root = ROOT_DIR / "templates" / template_name
-    return render_template(
+    files = render_template(
         template_root,
         base_dir,
         context,
@@ -25,3 +27,12 @@ def create_project(
         conditional_dirs,
         dry_run=dry_run,
     )
+
+    if not files:
+        typer.secho(
+            "\nNo new files created. The content may already exist.",
+            fg=typer.colors.YELLOW,
+        )
+        raise typer.Exit(code=1)
+
+    return files

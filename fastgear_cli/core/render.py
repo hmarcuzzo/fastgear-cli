@@ -1,5 +1,8 @@
+import subprocess
+import sys
 from pathlib import Path
 
+import typer
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
@@ -53,6 +56,44 @@ def render_template(
             out_path.write_bytes(tpl_path.read_bytes())
 
     return rendered_files
+
+
+def run_ruff_format(file_path: Path, project_dir: Path) -> None:
+    resolved_file_path = file_path.resolve()
+    resolved_project_dir = project_dir.resolve()
+    pyproject_path = resolved_project_dir / "pyproject.toml"
+
+    base_command = [sys.executable, "-m", "ruff"]
+    check_command = [*base_command, "check", "--fix", str(resolved_file_path)]
+    format_command = [*base_command, "format", str(resolved_file_path)]
+
+    if pyproject_path.exists():
+        check_command.extend(["--config", str(pyproject_path)])
+        format_command.extend(["--config", str(pyproject_path)])
+
+    try:
+        subprocess.run(
+            check_command,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            format_command,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        typer.secho(
+            "ruff not found in the current CLI environment.",
+            fg=typer.colors.YELLOW,
+        )
+    except subprocess.CalledProcessError as error:
+        typer.secho(
+            f"Failed to apply ruff rules to '{file_path.name}': {error.stderr.strip()}",
+            fg=typer.colors.YELLOW,
+        )
 
 
 def _should_render_dir(rel_path: Path, conditional_dirs: dict) -> bool:
