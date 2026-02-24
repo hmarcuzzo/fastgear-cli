@@ -60,16 +60,10 @@ def render_template(
 
 def run_ruff_format(file_path: Path, project_dir: Path) -> None:
     resolved_file_path = file_path.resolve()
-    resolved_project_dir = project_dir.resolve()
-    pyproject_path = resolved_project_dir / "pyproject.toml"
 
     base_command = [sys.executable, "-m", "ruff"]
     check_command = [*base_command, "check", "--fix", str(resolved_file_path)]
     format_command = [*base_command, "format", str(resolved_file_path)]
-
-    if pyproject_path.exists():
-        check_command.extend(["--config", str(pyproject_path)])
-        format_command.extend(["--config", str(pyproject_path)])
 
     try:
         subprocess.run(
