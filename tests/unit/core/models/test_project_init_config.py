@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from fastgear_cli.core.models import ProjectInitConfig
 
-pytest_plugins = ["tests.fixtures.core.models_fixtures"]
+pytest_plugins = ["tests.fixtures.core.models.project_init_config_fixtures"]
 
 
 @pytest.mark.describe("🧪  ProjectInitConfig")

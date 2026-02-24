@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import typer
 
 from fastgear_cli.core.filesystem import create_project
 
@@ -10,14 +11,14 @@ pytest_plugins = ["tests.fixtures.core.filesystem_fixtures"]
 
 @pytest.mark.describe("🧪  CreateProject")
 class TestCreateProject:
-    @pytest.mark.it("✅  Should call render_template_dir with correct arguments")
-    def test_calls_render_template_dir_with_correct_args(
+    @pytest.mark.it("✅  Should call render_template with correct arguments")
+    def test_calls_render_template_with_correct_args(
         self,
         mocker: MagicMock,
         output_directory: Path,
         sample_context: dict,
     ):
-        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template_dir")
+        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         mock_root_dir = mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR")
         mock_root_dir.__truediv__ = MagicMock(
             return_value=MagicMock(
@@ -39,7 +40,7 @@ class TestCreateProject:
         output_directory: Path,
         sample_context: dict,
     ):
-        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template_dir")
+        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
 
         create_project("new_project", output_directory, sample_context)
@@ -55,7 +56,7 @@ class TestCreateProject:
         output_directory: Path,
         sample_context: dict,
     ):
-        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template_dir")
+        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
         conditional_files = {"Dockerfile": True, "Makefile": False}
 
@@ -76,7 +77,7 @@ class TestCreateProject:
         output_directory: Path,
         sample_context: dict,
     ):
-        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template_dir")
+        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
         conditional_dirs = {"docker": True, "tests": False}
 
@@ -97,7 +98,7 @@ class TestCreateProject:
         output_directory: Path,
         sample_context: dict,
     ):
-        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template_dir")
+        mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         fake_root = Path("/fake/root")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", fake_root)
 
@@ -106,6 +107,26 @@ class TestCreateProject:
         call_args = mock_render.call_args
         expected_template_root = fake_root / "templates" / "custom_template"
         assert call_args[0][0] == expected_template_root
+
+    @pytest.mark.it("❌  Should raise typer.Exit when no files are created")
+    def test_raises_exit_when_no_files_are_created(
+        self,
+        mocker: MagicMock,
+        output_directory: Path,
+        sample_context: dict,
+    ):
+        mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
+        mocker.patch("fastgear_cli.core.filesystem.render_template", return_value=[])
+        mock_secho = mocker.patch("fastgear_cli.core.filesystem.typer.secho")
+
+        with pytest.raises(typer.Exit) as exc_info:
+            create_project("new_project", output_directory, sample_context)
+
+        assert exc_info.value.exit_code == 1
+        mock_secho.assert_called_once_with(
+            "\nNo new files created. The content may already exist.",
+            fg=typer.colors.YELLOW,
+        )
 
 
 @pytest.mark.describe("🧪  CreateProjectIntegration")

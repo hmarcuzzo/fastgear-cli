@@ -5,7 +5,7 @@ import pytest
 from fastgear_cli.core.render import (
     _should_render_dir,
     _should_render_file,
-    render_template_dir,
+    render_template,
 )
 
 pytest_plugins = ["tests.fixtures.core.render_fixtures"]
@@ -20,7 +20,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_jinja2_file,
             output_root,
             simple_context,
@@ -41,7 +41,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_jinja2_file,
             output_root,
             simple_context,
@@ -59,7 +59,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_static_file,
             output_root,
             simple_context,
@@ -78,7 +78,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_nested_dirs,
             output_root,
             simple_context,
@@ -96,7 +96,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_nested_dirs,
             output_root,
             simple_context,
@@ -114,7 +114,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_conditional_dir,
             output_root,
             simple_context,
@@ -132,7 +132,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_conditional_dir,
             output_root,
             simple_context,
@@ -150,7 +150,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_conditional_file,
             output_root,
             simple_context,
@@ -168,7 +168,7 @@ class TestRenderTemplateDir:
         output_root: Path,
         simple_context: dict,
     ):
-        render_template_dir(
+        render_template(
             template_with_conditional_file,
             output_root,
             simple_context,
@@ -189,7 +189,7 @@ class TestRenderTemplateDir:
         template_file = template_root / "file.txt.j2"
         template_file.write_text("content\n")
 
-        render_template_dir(
+        render_template(
             template_root,
             output_root,
             simple_context,
