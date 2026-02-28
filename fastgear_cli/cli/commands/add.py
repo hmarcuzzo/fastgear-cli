@@ -4,7 +4,7 @@ import typer
 
 from fastgear_cli.cli.commands.helpers.add_entity_helper import handle_entity_files
 from fastgear_cli.core.constants.enums import ElementTypeEnum
-from fastgear_cli.core.filesystem import create_project
+from fastgear_cli.core.filesystem import create_template
 from fastgear_cli.core.models import AddElementConfig
 from fastgear_cli.core.utils.file_tree_utils import FileTreeUtils
 
@@ -31,6 +31,11 @@ def add(
         "--use-folders/--no-use-folders",
         help="Use nested folders (e.g. <module>/entities). Default is enabled.",
     ),
+    entity_path: str | None = typer.Option(
+        None,
+        "--entity-path",
+        help="Entity import path used by repository (e.g. src.modules.user.entities.user_entity.User)",
+    ),
     dry_run: bool = typer.Option(
         False,
         "--dry-run",
@@ -39,10 +44,14 @@ def add(
     ),
 ) -> None:
     config = AddElementConfig(
-        base_dir=path, element_type=element_type, element_name=element_name, use_folders=use_folders
+        base_dir=path,
+        element_type=element_type,
+        element_name=element_name,
+        use_folders=use_folders,
+        entity_path=entity_path,
     )
 
-    files = create_project(
+    files = create_template(
         f"add/{config.element_type}/{config.structure}",
         config.base_dir,
         config.context,
@@ -58,6 +67,6 @@ def add(
         return
 
     typer.secho(
-        f"Added {config.element_type} for module '{config.element_name}' successfully!",
+        f"\nAdded {config.element_type} successfully!",
         fg=typer.colors.GREEN,
     )

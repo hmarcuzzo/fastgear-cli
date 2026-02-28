@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 import typer
 
-from fastgear_cli.core.filesystem import create_project
+from fastgear_cli.core.filesystem import create_template
 
 pytest_plugins = ["tests.fixtures.core.filesystem_fixtures"]
 
@@ -26,7 +26,7 @@ class TestCreateProject:
             )
         )
 
-        create_project("new_project", output_directory, sample_context)
+        create_template("new_project", output_directory, sample_context)
 
         mock_render.assert_called_once()
         call_args = mock_render.call_args
@@ -43,7 +43,7 @@ class TestCreateProject:
         mock_render = mocker.patch("fastgear_cli.core.filesystem.render_template")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
 
-        create_project("new_project", output_directory, sample_context)
+        create_template("new_project", output_directory, sample_context)
 
         call_args = mock_render.call_args
         assert call_args[0][3] == {}
@@ -60,7 +60,7 @@ class TestCreateProject:
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
         conditional_files = {"Dockerfile": True, "Makefile": False}
 
-        create_project(
+        create_template(
             "new_project",
             output_directory,
             sample_context,
@@ -81,7 +81,7 @@ class TestCreateProject:
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
         conditional_dirs = {"docker": True, "tests": False}
 
-        create_project(
+        create_template(
             "new_project",
             output_directory,
             sample_context,
@@ -102,7 +102,7 @@ class TestCreateProject:
         fake_root = Path("/fake/root")
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", fake_root)
 
-        create_project("custom_template", output_directory, sample_context)
+        create_template("custom_template", output_directory, sample_context)
 
         call_args = mock_render.call_args
         expected_template_root = fake_root / "templates" / "custom_template"
@@ -120,7 +120,7 @@ class TestCreateProject:
         mock_secho = mocker.patch("fastgear_cli.core.filesystem.typer.secho")
 
         with pytest.raises(typer.Exit) as exc_info:
-            create_project("new_project", output_directory, sample_context)
+            create_template("new_project", output_directory, sample_context)
 
         assert exc_info.value.exit_code == 1
         mock_secho.assert_called_once_with(
@@ -144,7 +144,7 @@ class TestCreateProjectIntegration:
             template_with_files.parent.parent,
         )
 
-        create_project("test_template", output_directory, sample_context)
+        create_template("test_template", output_directory, sample_context)
 
         project_dir = output_directory / "my-project"
         assert project_dir.exists()
@@ -164,7 +164,7 @@ class TestCreateProjectIntegration:
             template_with_files.parent.parent,
         )
 
-        create_project("test_template", output_directory, sample_context)
+        create_template("test_template", output_directory, sample_context)
 
         readme_path = output_directory / "my-project" / "README.md"
         content = readme_path.read_text()
@@ -183,7 +183,7 @@ class TestCreateProjectIntegration:
             template_with_files.parent.parent,
         )
 
-        create_project("test_template", output_directory, sample_context)
+        create_template("test_template", output_directory, sample_context)
 
         config_path = output_directory / "my-project" / "config.txt"
         content = config_path.read_text()
@@ -202,7 +202,7 @@ class TestCreateProjectIntegration:
             template_with_conditional_dir.parent.parent,
         )
 
-        create_project(
+        create_template(
             "test_template",
             output_directory,
             sample_context,
@@ -226,7 +226,7 @@ class TestCreateProjectIntegration:
             template_with_conditional_dir.parent.parent,
         )
 
-        create_project(
+        create_template(
             "test_template",
             output_directory,
             sample_context,
@@ -249,7 +249,7 @@ class TestCreateProjectIntegration:
             template_with_conditional_file.parent.parent,
         )
 
-        create_project(
+        create_template(
             "test_template",
             output_directory,
             sample_context,
@@ -273,7 +273,7 @@ class TestCreateProjectIntegration:
             template_with_conditional_file.parent.parent,
         )
 
-        create_project(
+        create_template(
             "test_template",
             output_directory,
             sample_context,

@@ -6,7 +6,7 @@ from fastgear_cli.configs.settings import ROOT_DIR
 from fastgear_cli.core.render import render_template
 
 
-def create_project(
+def create_template(
     template_name: str,
     base_dir: Path,
     context: dict,

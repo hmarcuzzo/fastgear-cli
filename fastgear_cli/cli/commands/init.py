@@ -10,7 +10,7 @@ from fastgear_cli.cli.prompts.project import (
     ask_project_name,
     confirm_project_title,
 )
-from fastgear_cli.core.filesystem import create_project
+from fastgear_cli.core.filesystem import create_template
 from fastgear_cli.core.models import ProjectInitConfig
 from fastgear_cli.core.utils.file_tree_utils import FileTreeUtils
 
@@ -19,9 +19,9 @@ init_app = typer.Typer(help="Project initialization command")
 
 @init_app.command()
 def init(
-    directory: Path = typer.Argument(
+    path: Path = typer.Argument(
         None,
-        help="Directory where the project should be created (defaults to current directory)",
+        help="Path where the project should be created (defaults to current path)",
         exists=False,
     ),
     dry_run: bool = typer.Option(
@@ -31,7 +31,7 @@ def init(
         help="Show what files would be created without actually creating them",
     ),
 ):
-    base_dir = directory if directory else Path.cwd()
+    base_dir = path if path else Path.cwd()
 
     config = _collect_project_info(base_dir)
     files = _generate_project(config, dry_run=dry_run)
@@ -67,7 +67,7 @@ def _collect_project_info(base_dir: Path) -> ProjectInitConfig:
 
 def _generate_project(config: ProjectInitConfig, *, dry_run: bool) -> list[Path]:
     try:
-        return create_project(
+        return create_template(
             "new_project",
             config.base_dir,
             config.context,
