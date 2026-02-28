@@ -1,2 +1,8 @@
-class {{ element_class_name }}Repository:
-    pass
+from fastgear.common.database.sqlalchemy.async_base_repository import AsyncBaseRepository
+
+from {{ entity_import_path }} import {{ entity_class_name }}
+
+
+class {{ element_class_name }}Repository(AsyncBaseRepository[{{ entity_class_name }}]):
+    def __init__(self):
+        super().__init__({{ entity_class_name }})

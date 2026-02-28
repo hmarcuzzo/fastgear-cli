@@ -42,7 +42,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(temp_directory)])
@@ -75,7 +75,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(custom_dir)])
@@ -103,7 +103,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=False)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(temp_directory)])
@@ -133,7 +133,7 @@ class TestInitCommand:
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
         mocker.patch(
-            "fastgear_cli.cli.commands.init.create_project",
+            "fastgear_cli.cli.commands.init.create_template",
             side_effect=FileExistsError,
         )
 
@@ -161,7 +161,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mock_subprocess = mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(temp_directory)])
@@ -191,7 +191,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch(
             "fastgear_cli.cli.commands.init.subprocess.run",
             side_effect=subprocess.CalledProcessError(1, "uv lock", stderr="error"),
@@ -221,7 +221,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch(
             "fastgear_cli.cli.commands.init.subprocess.run",
             side_effect=FileNotFoundError,
@@ -251,7 +251,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mocker.patch("fastgear_cli.cli.commands.init.create_project")
+        mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(temp_directory)])
@@ -284,7 +284,7 @@ class TestInitCommand:
             temp_directory / "test-project" / "README.md",
         ]
         mocker.patch(
-            "fastgear_cli.cli.commands.init.create_project",
+            "fastgear_cli.cli.commands.init.create_template",
             return_value=mock_files,
         )
 
@@ -316,7 +316,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
-        mocker.patch("fastgear_cli.cli.commands.init.create_project", return_value=[])
+        mocker.patch("fastgear_cli.cli.commands.init.create_template", return_value=[])
         mock_subprocess = mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
         result = runner.invoke(init_app, [str(temp_directory), "--dry-run"])
@@ -325,8 +325,8 @@ class TestInitCommand:
         mock_subprocess.assert_not_called()
         assert "Generating uv.lock" not in result.output
 
-    @pytest.mark.it("✅  Should pass dry_run=True to create_project")
-    def test_dry_run_passes_flag_to_create_project(
+    @pytest.mark.it("✅  Should pass dry_run=True to create_template")
+    def test_dry_run_passes_flag_to_create_template(
         self,
         mocker: MagicMock,
         temp_directory: Path,
@@ -345,7 +345,7 @@ class TestInitCommand:
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
         mock_create = mocker.patch(
-            "fastgear_cli.cli.commands.init.create_project",
+            "fastgear_cli.cli.commands.init.create_template",
             return_value=[],
         )
 
