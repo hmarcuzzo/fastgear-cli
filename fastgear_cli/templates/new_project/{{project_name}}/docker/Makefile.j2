@@ -30,5 +30,10 @@ down-local:
 	@docker compose -f local.yaml down && \
 	rm -f .env
 
+{% if database_provider in ['Postgresql'] -%}
+migrate-local:
+	@docker exec -it {{ project_name }}_app_local sh -c "alembic upgrade head"
+{%- endif %}
+
 test-local:
-	  @docker exec -it {{ project_name }}_app_local sh -c "pytest ."
+	@docker exec -it {{ project_name }}_app_local sh -c "pytest ."
