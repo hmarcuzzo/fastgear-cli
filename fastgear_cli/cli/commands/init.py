@@ -7,6 +7,7 @@ import typer
 from fastgear_cli.cli.prompts.project import (
     ask_agent_tools,
     ask_ci_provider,
+    ask_database_provider,
     ask_project_name,
     confirm_project_title,
 )
@@ -54,6 +55,8 @@ def _collect_project_info(base_dir: Path) -> ProjectInitConfig:
     use_docker = questionary.confirm("Use Docker?", default=True).ask()
     agent_tools = ask_agent_tools()
     ci_provider = ask_ci_provider()
+    database_provider = ask_database_provider()
+    use_database = database_provider is not None
 
     return ProjectInitConfig(
         base_dir=base_dir,
@@ -62,6 +65,8 @@ def _collect_project_info(base_dir: Path) -> ProjectInitConfig:
         use_docker=use_docker,
         agent_tools=agent_tools,
         ci_provider=ci_provider,
+        use_database=use_database,
+        database_provider=database_provider,
     )
 
 

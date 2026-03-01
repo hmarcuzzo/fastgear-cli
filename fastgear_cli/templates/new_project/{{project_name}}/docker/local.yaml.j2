@@ -15,6 +15,35 @@ services:
       - ../src:/app/src
     environment:
       - PYTHONDONTWRITEBYTECODE=1
+{%- if use_database %}
+    networks:
+      - {{ project_name }}_app_local_network
+    depends_on:
+      - {{ project_name }}_db_local
+{% endif %}
+
+
+{%- if database_provider == 'Postgresql' %}
+  {{ project_name }}_db_local:
+    image: postgres:17.4
+    container_name: {{ project_name }}_db_local
+    environment:
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    volumes:
+      - {{ project_name }}-app-data:/var/lib/postgresql/data
+    ports:
+      - ${DATABASE_PORT}:5432
+    networks:
+      - {{ project_name }}_app_local_network
+{% endif %}
 
 volumes:
   {{ project_name }}-app-data:
+
+{% if use_database -%}
+networks:
+  {{ project_name }}_app_local_network:
+    driver: bridge
+{% endif -%}

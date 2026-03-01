@@ -1,7 +1,7 @@
 .PHONY: build-local up-local down-local test-local
 
 define generate_env
-	@cat ../src/config/toml/env.toml > .env.tmp
+	@cat ../src/config/toml/env.toml >> .env.tmp || true
 	@cat ../src/config/toml/env.$(1).toml >> .env.tmp 2>/dev/null || true
 	@cat ../src/config/toml/env.$(1).local.toml >> .env.tmp 2>/dev/null || true
 

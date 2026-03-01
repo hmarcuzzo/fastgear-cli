@@ -1,3 +1,8 @@
 from fastapi import APIRouter
 
 domain_routers = APIRouter()
+
+
+{% if use_database -%}
+domain_entities = []
+{% endif -%}

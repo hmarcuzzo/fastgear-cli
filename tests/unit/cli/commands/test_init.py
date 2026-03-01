@@ -21,6 +21,13 @@ def _mock_questionary_confirm(mocker: MagicMock, return_value: bool) -> MagicMoc
     )
 
 
+def _mock_ask_database_provider(mocker: MagicMock, return_value: str | None) -> MagicMock:
+    return mocker.patch(
+        "fastgear_cli.cli.commands.init.ask_database_provider",
+        return_value=return_value,
+    )
+
+
 @pytest.mark.describe("🧪  InitCommand")
 class TestInitCommand:
     @pytest.mark.it("✅  Should create project in specified directory")
@@ -42,6 +49,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -75,6 +83,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -103,6 +112,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=False)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mock_create = mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -132,6 +142,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch(
             "fastgear_cli.cli.commands.init.create_template",
             side_effect=FileExistsError,
@@ -161,6 +172,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mock_subprocess = mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -191,6 +203,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch(
             "fastgear_cli.cli.commands.init.subprocess.run",
@@ -221,6 +234,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch(
             "fastgear_cli.cli.commands.init.subprocess.run",
@@ -251,6 +265,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch("fastgear_cli.cli.commands.init.create_template")
         mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -279,6 +294,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mock_files = [
             temp_directory / "test-project" / "pyproject.toml",
             temp_directory / "test-project" / "README.md",
@@ -316,6 +332,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mocker.patch("fastgear_cli.cli.commands.init.create_template", return_value=[])
         mock_subprocess = mocker.patch("fastgear_cli.cli.commands.init.subprocess.run")
 
@@ -344,6 +361,7 @@ class TestInitCommand:
         _mock_questionary_confirm(mocker, return_value=True)
         mocker.patch("fastgear_cli.cli.commands.init.ask_agent_tools", return_value=[])
         mocker.patch("fastgear_cli.cli.commands.init.ask_ci_provider", return_value=None)
+        _mock_ask_database_provider(mocker, return_value=None)
         mock_create = mocker.patch(
             "fastgear_cli.cli.commands.init.create_template",
             return_value=[],

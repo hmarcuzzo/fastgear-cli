@@ -1,9 +1,20 @@
 from fastapi import APIRouter
+
 from src.modules.app.app_controller import app_router
+{% if use_database -%}
+from src.modules.domain import domain_entities, domain_routers
+
+{% else -%}
 from src.modules.domain import domain_routers
 
+{% endif -%}
 app_routers = APIRouter()
 
 # Include App Modules Routes
 app_routers.include_router(app_router)
 app_routers.include_router(domain_routers)
+
+
+{% if use_database -%}
+app_entities = domain_entities
+{% endif -%}
