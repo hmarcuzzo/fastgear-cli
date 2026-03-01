@@ -1,6 +1,10 @@
 import questionary
 
-from fastgear_cli.core.constants.enums import AgentToolsEnum, CIProviderEnum
+from fastgear_cli.core.constants.enums import (
+    AgentToolsEnum,
+    CIProviderEnum,
+    DatabaseProviderEnum,
+)
 
 
 def ask_project_name() -> str:
@@ -47,4 +51,19 @@ def ask_ci_provider() -> str | None:
     return questionary.select(
         "Select CI/CD provider:",
         choices=[CIProviderEnum.GITHUB_ACTIONS],
+    ).ask()
+
+
+def ask_database_provider() -> str | None:
+    use_db = questionary.confirm(
+        "Add database support?",
+        default=False,
+    ).ask()
+
+    if not use_db:
+        return None
+
+    return questionary.select(
+        "Select database:",
+        choices=[DatabaseProviderEnum.POSTGRESQL],
     ).ask()

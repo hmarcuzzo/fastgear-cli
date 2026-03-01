@@ -25,6 +25,30 @@ class AppSettings(TomlBaseSettings):
     )
 
 
+{% if database_provider in ['Postgresql'] -%}
+class DatabaseSettings(TomlBaseSettings):
+    DATABASE_CONNECTION: Annotated[str, StringConstraints()] = "postgresql+asyncpg"
+    DATABASE_USERNAME: Annotated[str, StringConstraints()]
+    DATABASE_PASSWORD: Annotated[str, StringConstraints()]
+    DATABASE_HOST: Annotated[str, StringConstraints()]
+    DATABASE_PORT: Annotated[int, Field(ge=0, le=65535)] = 5432
+    DATABASE_NAME: Annotated[str, StringConstraints()]
+
+    model_config = SettingsConfigDict(
+        toml_file=TomlBaseSettings.get_toml_files(CONFIG_DIR, EnvironmentOption), extra="ignore"
+    )
+
+
+class Settings(AppSettings, DatabaseSettings):
+    model_config = SettingsConfigDict(
+        toml_file=AppSettings.model_config["toml_file"]
+        + DatabaseSettings.model_config["toml_file"],
+        extra="ignore",
+        validate_default=True,
+    )
+
+
+{% else -%}
 class Settings(AppSettings):
     model_config = SettingsConfigDict(
         toml_file=AppSettings.model_config["toml_file"],
@@ -33,4 +57,5 @@ class Settings(AppSettings):
     )
 
 
+{% endif -%}
 settings = Settings()
