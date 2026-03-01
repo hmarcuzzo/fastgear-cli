@@ -13,6 +13,9 @@ Before running the project, you need to configure the environment variables:
 
 1. Navigate to `src/config/toml/` directory
 2. Configure the `env.toml` file with your settings (app settings, etc.)
+{%- if database_provider in ['Postgresql'] %}
+3. If you are using Docker, update the `DATABASE_HOST` in the relevant `env.*.toml` file to `{{ project_name }}_db_local`
+{%- endif %}
 
 {%- if use_docker %}
 ## Running with Docker (Recommended)
@@ -29,6 +32,12 @@ Before running the project, you need to configure the environment variables:
 
    - **Notes**:
      - You have to sync the dependencies using `uv sync` before running the Docker container for the first time.
+{%- if database_provider in ['Postgresql'] %}
+     - After starting the containers, run the database migrations:
+       ```bash
+       make migrate-local
+       ```
+{%- endif %}
 
    This command will:
     - Merge configuration files from `src/config/toml/`
@@ -54,6 +63,13 @@ Before running the project, you need to configure the environment variables:
   ```bash
   make test-local
   ```
+{%- if database_provider in ['Postgresql'] %}
+
+- **Run database migrations**:
+  ```bash
+  make migrate-local
+  ```
+{%- endif %}
 {%- endif %}
 
 ## Running Manually
@@ -67,6 +83,23 @@ Before running the project, you need to configure the environment variables:
 
 ### Running the Application
 
+{%- if database_provider in ['Postgresql'] %}
+1. Start the application:
+   ```bash
+   uv run alembic upgrade head
+   ```
+
+2. Start the application:
+   ```bash
+   uv run src/main.py
+   ```
+
+3. The application will start on the port specified in your configuration (default: 8000)
+
+4. Access the application at `http://localhost:8000`
+
+5. View API documentation at `http://localhost:8000/docs` or `http://localhost:8000/redoc`
+{%- else %}
 1. Start the application:
    ```bash
    uv run src/main.py
@@ -77,3 +110,4 @@ Before running the project, you need to configure the environment variables:
 3. Access the application at `http://localhost:8000`
 
 4. View API documentation at `http://localhost:8000/docs` or `http://localhost:8000/redoc`
+{%- endif %}
