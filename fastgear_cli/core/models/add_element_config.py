@@ -8,6 +8,9 @@ from pydantic_core.core_schema import ValidationInfo
 from fastgear_cli.cli.commands.helpers.add_repository_helper import (
     ask_entity_path,
 )
+from fastgear_cli.cli.commands.helpers.add_repository_helper import (
+    validate_entity_path as validate_repository_entity_path,
+)
 from fastgear_cli.core.constants.enums import ElementTypeEnum
 
 
@@ -57,10 +60,13 @@ class AddElementConfig(BaseModel):
     @field_validator("entity_path", mode="after")
     @classmethod
     def validate_entity_path(cls, v: str | None, info: ValidationInfo) -> str | None:
-        if info.data.get("element_type") == ElementTypeEnum.REPOSITORY and v is None:
-            v = ask_entity_path()
+        if info.data.get("element_type") != ElementTypeEnum.REPOSITORY:
+            return v
 
-        return v
+        if v is None:
+            return ask_entity_path()
+
+        return validate_repository_entity_path(v)
 
     @property
     def structure(self) -> str:

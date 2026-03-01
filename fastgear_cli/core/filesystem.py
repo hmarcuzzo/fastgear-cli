@@ -30,7 +30,7 @@ def create_template(
 
     if not files:
         typer.secho(
-            "\nNo new files and/or paths created. The content may already exist.",
+            "\nNo new files created. The content may already exist.",
             fg=typer.colors.YELLOW,
         )
         raise typer.Exit(code=1)
