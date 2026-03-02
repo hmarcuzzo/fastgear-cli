@@ -29,7 +29,7 @@ def render_template(
         if (
             tpl_path.is_dir()
             or not _should_render_dir(rel, conditional_dirs)
-            or not _should_render_file(tpl_path.name, conditional_files)
+            or not _should_render_file(rel, conditional_files)
         ):
             continue
 
@@ -115,8 +115,17 @@ def _should_render_dir(rel_path: Path, conditional_dirs: dict) -> bool:
     return True
 
 
-def _should_render_file(file_name: str, conditional_files: dict) -> bool:
-    if file_name not in conditional_files:
+def _should_render_file(rel_path: Path | str, conditional_files: dict) -> bool:
+    rel_path = Path(rel_path)
+    if len(rel_path.parts) <= 1:
+        file_path = rel_path.as_posix()
+        if file_path in conditional_files:
+            return conditional_files[file_path]
         return True
 
-    return conditional_files.get(file_name)
+    file_path = Path(*rel_path.parts[1:]).as_posix()
+
+    if file_path in conditional_files:
+        return conditional_files[file_path]
+
+    return True

@@ -58,12 +58,10 @@ class ProjectInitConfig(BaseModel):
     def conditional_files(self) -> dict:
         return {
             ".dockerignore": self.use_docker,
-            "copilot-instructions.md": AgentToolsEnum.GITHUB_COPILOT in self.agent_tools,
-            "git-commit-instructions.md": AgentToolsEnum.GITHUB_COPILOT in self.agent_tools,
+            ".github/copilot-instructions.md": AgentToolsEnum.GITHUB_COPILOT in self.agent_tools,
+            ".github/git-commit-instructions.md": AgentToolsEnum.GITHUB_COPILOT in self.agent_tools,
             "alembic.ini": self._use_alembic(),
-            "db_connection.py": self.use_database,
-            "env.example.toml.j2": self._use_alembic(),
-            "env.local.toml.j2": self._use_alembic(),
+            "src/core/common/db_connection.py": self.use_database,
         }
 
     @property
@@ -75,7 +73,7 @@ class ProjectInitConfig(BaseModel):
             ".github/workflows": self.ci_provider == CIProviderEnum.GITHUB_ACTIONS,
             ".github/actions": self.ci_provider == CIProviderEnum.GITHUB_ACTIONS,
             "src/migrations": self._use_alembic(),
-            "src/common": self.use_database,
+            "src/core/common": self.use_database,
         }
 
     def _use_alembic(self) -> bool:
