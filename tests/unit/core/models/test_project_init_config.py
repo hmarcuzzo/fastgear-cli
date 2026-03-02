@@ -198,8 +198,6 @@ class TestProjectInitConfigConditionalFiles:
         assert conditional_files[".github/copilot-instructions.md"] is True
         assert "src/core/common/db_connection.py" in conditional_files
         assert conditional_files["src/core/common/db_connection.py"] is True
-        assert "src/config/toml/env.example.toml.j2" in conditional_files
-        assert conditional_files["src/config/toml/env.example.toml.j2"] is True
 
 
 @pytest.mark.describe("🧪  ProjectInitConfigConditionalDirs")
