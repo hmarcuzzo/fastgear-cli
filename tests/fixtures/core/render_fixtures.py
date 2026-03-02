@@ -65,3 +65,22 @@ def template_with_conditional_file(template_root: Path) -> Path:
     (template_root / "README.md").write_text("# README")
     (template_root / ".dockerignore").write_text("*.pyc")
     return template_root
+
+
+@pytest.fixture
+def template_with_project_root_conditional_file(template_root: Path) -> Path:
+    project_dir = template_root / "{{project_name}}"
+    project_dir.mkdir()
+    (project_dir / "README.md").write_text("# README")
+    (project_dir / "alembic.ini").write_text("[alembic]\n")
+    return template_root
+
+
+@pytest.fixture
+def template_with_nested_conditional_file(template_root: Path) -> Path:
+    project_dir = template_root / "{{project_name}}"
+    nested_dir = project_dir / ".github"
+    nested_dir.mkdir(parents=True)
+    (project_dir / "README.md").write_text("# README")
+    (nested_dir / "copilot-instructions.md").write_text("# Copilot\n")
+    return template_root

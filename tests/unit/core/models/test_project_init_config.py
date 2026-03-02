@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from fastgear_cli.core.constants.enums import AgentToolsEnum, DatabaseProviderEnum
 from fastgear_cli.core.models import ProjectInitConfig
 
 pytest_plugins = ["tests.fixtures.core.models.project_init_config_fixtures"]
@@ -176,6 +177,29 @@ class TestProjectInitConfigConditionalFiles:
 
         assert ".dockerignore" in conditional_files
         assert conditional_files[".dockerignore"] is False
+
+    @pytest.mark.it("✅  Should expose nested conditional files using project-relative paths")
+    def test_exposes_nested_conditional_files_using_relative_paths(
+        self,
+        temp_directory: Path,
+    ):
+        config = ProjectInitConfig(
+            base_dir=temp_directory,
+            project_name="test-project",
+            project_title="Test Project",
+            agent_tools=[AgentToolsEnum.GITHUB_COPILOT],
+            use_database=True,
+            database_provider=DatabaseProviderEnum.POSTGRESQL,
+        )
+
+        conditional_files = config.conditional_files
+
+        assert ".github/copilot-instructions.md" in conditional_files
+        assert conditional_files[".github/copilot-instructions.md"] is True
+        assert "src/core/common/db_connection.py" in conditional_files
+        assert conditional_files["src/core/common/db_connection.py"] is True
+        assert "src/config/toml/env.example.toml.j2" in conditional_files
+        assert conditional_files["src/config/toml/env.example.toml.j2"] is True
 
 
 @pytest.mark.describe("🧪  ProjectInitConfigConditionalDirs")
