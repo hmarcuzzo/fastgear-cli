@@ -179,6 +179,44 @@ class TestRenderTemplateDir:
         assert (output_root / "README.md").exists()
         assert (output_root / ".dockerignore").exists()
 
+    @pytest.mark.it("✅  Should skip disabled conditional files at generated project root")
+    def test_skips_disabled_project_root_conditional_files(
+        self,
+        template_with_project_root_conditional_file: Path,
+        output_root: Path,
+        simple_context: dict,
+    ):
+        render_template(
+            template_with_project_root_conditional_file,
+            output_root,
+            simple_context,
+            {"alembic.ini": False},
+            {},
+        )
+
+        project_dir = output_root / "my-project"
+        assert (project_dir / "README.md").exists()
+        assert not (project_dir / "alembic.ini").exists()
+
+    @pytest.mark.it("✅  Should skip disabled nested conditional files by relative path")
+    def test_skips_disabled_nested_conditional_files(
+        self,
+        template_with_nested_conditional_file: Path,
+        output_root: Path,
+        simple_context: dict,
+    ):
+        render_template(
+            template_with_nested_conditional_file,
+            output_root,
+            simple_context,
+            {".github/copilot-instructions.md": False},
+            {},
+        )
+
+        project_dir = output_root / "my-project"
+        assert (project_dir / "README.md").exists()
+        assert not (project_dir / ".github" / "copilot-instructions.md").exists()
+
     @pytest.mark.it("✅  Should preserve trailing newlines in templates")
     def test_preserves_trailing_newlines_in_templates(
         self,
@@ -264,25 +302,34 @@ class TestShouldRenderDir:
 class TestShouldRenderFile:
     @pytest.mark.it("✅  Should return True when no conditional files")
     def test_returns_true_when_no_conditional_files(self):
-        result = _should_render_file("README.md", {})
+        result = _should_render_file(Path("{{project_name}}/README.md"), {})
 
         assert result is True
 
     @pytest.mark.it("✅  Should return True when file not in conditionals")
     def test_returns_true_when_file_not_in_conditionals(self):
-        result = _should_render_file("README.md", {".dockerignore": False})
+        result = _should_render_file(
+            Path("{{project_name}}/README.md"),
+            {".dockerignore": False},
+        )
 
         assert result is True
 
     @pytest.mark.it("✅  Should return True when conditional file is enabled")
     def test_returns_true_when_conditional_file_enabled(self):
-        result = _should_render_file(".dockerignore", {".dockerignore": True})
+        result = _should_render_file(
+            Path("{{project_name}}/.dockerignore"),
+            {".dockerignore": True},
+        )
 
         assert result is True
 
     @pytest.mark.it("✅  Should return False when conditional file is disabled")
     def test_returns_false_when_conditional_file_disabled(self):
-        result = _should_render_file(".dockerignore", {".dockerignore": False})
+        result = _should_render_file(
+            Path("{{project_name}}/.dockerignore"),
+            {".dockerignore": False},
+        )
 
         assert result is False
 
@@ -290,11 +337,35 @@ class TestShouldRenderFile:
     def test_handles_multiple_conditional_files(self):
         conditionals = {
             ".dockerignore": True,
-            "Makefile": False,
-            "docker-compose.yml": True,
+            "docker/Makefile": False,
+            "docker/docker-compose.yml": True,
         }
 
-        assert _should_render_file(".dockerignore", conditionals) is True
-        assert _should_render_file("Makefile", conditionals) is False
-        assert _should_render_file("docker-compose.yml", conditionals) is True
-        assert _should_render_file("README.md", conditionals) is True
+        assert _should_render_file(Path("{{project_name}}/.dockerignore"), conditionals) is True
+        assert _should_render_file(Path("{{project_name}}/docker/Makefile"), conditionals) is False
+        assert (
+            _should_render_file(
+                Path("{{project_name}}/docker/docker-compose.yml"),
+                conditionals,
+            )
+            is True
+        )
+        assert _should_render_file(Path("{{project_name}}/README.md"), conditionals) is True
+
+    @pytest.mark.it("✅  Should resolve conditional files from generated project root")
+    def test_resolves_project_root_relative_conditional_file(self):
+        result = _should_render_file(
+            Path("{{project_name}}/alembic.ini"),
+            {"alembic.ini": False},
+        )
+
+        assert result is False
+
+    @pytest.mark.it("✅  Should resolve conditional files using nested relative path")
+    def test_resolves_nested_relative_conditional_file(self):
+        result = _should_render_file(
+            Path("{{project_name}}/.github/copilot-instructions.md"),
+            {".github/copilot-instructions.md": False},
+        )
+
+        assert result is False
