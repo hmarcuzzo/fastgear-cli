@@ -77,7 +77,7 @@ class ProjectInitConfig(BaseModel):
         }
 
     def _use_alembic(self) -> bool:
-        return self.database_provider in [DatabaseProviderEnum.POSTGRESQL]
+        return self.database_provider == DatabaseProviderEnum.POSTGRESQL
 
     def _get_dependencies(self) -> list[str]:
         deps = [
