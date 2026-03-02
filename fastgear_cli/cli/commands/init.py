@@ -4,7 +4,7 @@ from pathlib import Path
 import questionary
 import typer
 
-from fastgear_cli.cli.prompts.project import (
+from fastgear_cli.cli.prompts.init_project import (
     ask_agent_tools,
     ask_ci_provider,
     ask_database_provider,
