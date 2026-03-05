@@ -172,3 +172,94 @@ class TestAddCommand:
 
         assert result.exit_code == 1
         assert "Invalid element type" in result.output
+
+    @pytest.mark.it("✅  Should create service files without repository")
+    def test_creates_service_files_without_repository(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        result = runner.invoke(add_app, ["service", "billing", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        assert (temp_path / "services/__init__.py").exists()
+        service_file = temp_path / "services/billing_service.py"
+        assert service_file.exists()
+        service_content = service_file.read_text(encoding="utf-8")
+        assert "class BillingService" in service_content
+        assert "pass" in service_content
+        assert "import" not in service_content
+
+    @pytest.mark.it("✅  Should create service files with repository via option")
+    def test_creates_service_files_with_repository_option(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "service",
+                "order",
+                "--path",
+                str(temp_path),
+                "--repository-path",
+                "src.modules.sales.repositories.order_repository.OrderRepository",
+            ],
+        )
+
+        assert result.exit_code == 0
+        service_file = temp_path / "services/order_service.py"
+        assert service_file.exists()
+        service_content = service_file.read_text(encoding="utf-8")
+        assert (
+            "from src.modules.sales.repositories.order_repository import OrderRepository"
+            in service_content
+        )
+        assert "def __init__(self, repository: OrderRepository = None)" in service_content
+        assert "self.repository = repository or OrderRepository()" in service_content
+
+    @pytest.mark.it("✅  Should ask for repository path when adding service and user wants it")
+    def test_asks_for_repository_path_when_adding_service(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = True
+        mock_text = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.text"
+        )
+        mock_text.return_value.ask.return_value = (
+            "src.modules.billing.repositories.invoice_repository.InvoiceRepository"
+        )
+
+        result = runner.invoke(add_app, ["service", "invoice", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        service_file = temp_path / "services/invoice_service.py"
+        assert service_file.exists()
+        assert (
+            "from src.modules.billing.repositories.invoice_repository import InvoiceRepository"
+            in service_file.read_text(encoding="utf-8")
+        )
+
+    @pytest.mark.it("❌  Should fail with invalid service repository path")
+    def test_fails_with_invalid_service_repository_path(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "service",
+                "invoice",
+                "--path",
+                str(temp_path),
+                "--repository-path",
+                "invoice_repository",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Invalid repository path." in result.output

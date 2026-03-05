@@ -34,7 +34,12 @@ def add(
     entity_path: str | None = typer.Option(
         None,
         "--entity-path",
-        help="Entity import path used by repository (e.g. src.modules.user.entities.user_entity.User)",
+        help="Entity import path used by repository (e.g. src.modules.user.entities.User)",
+    ),
+    repository_path: str | None = typer.Option(
+        None,
+        "--repository-path",
+        help="Repository import path used by service (optional, e.g. src.modules.user.repositories.user_repository.UserRepository)",
     ),
     dry_run: bool = typer.Option(
         False,
@@ -49,6 +54,7 @@ def add(
         element_name=element_name,
         use_folders=use_folders,
         entity_path=entity_path,
+        repository_path=repository_path,
     )
 
     files = create_template(

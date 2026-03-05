@@ -1,0 +1,11 @@
+{% if repository_import_path -%}
+from {{ repository_import_path }} import {{ repository_class_name }}
+
+
+class {{ element_class_name }}Service:
+    def __init__(self, repository: {{ repository_class_name }} = None):
+        self.repository = repository or {{ repository_class_name }}()
+{% else -%}
+class {{ element_class_name }}Service:
+    pass
+{% endif -%}
