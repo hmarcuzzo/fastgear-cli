@@ -11,6 +11,12 @@ from fastgear_cli.cli.commands.helpers.add_repository_helper import (
 from fastgear_cli.cli.commands.helpers.add_repository_helper import (
     validate_entity_path as validate_repository_entity_path,
 )
+from fastgear_cli.cli.commands.helpers.add_service_helper import (
+    ask_repository_path,
+)
+from fastgear_cli.cli.commands.helpers.add_service_helper import (
+    validate_repository_path as validate_service_repository_path,
+)
 from fastgear_cli.core.constants.enums import ElementTypeEnum
 
 
@@ -20,6 +26,7 @@ class AddElementConfig(BaseModel):
     element_name: str = Field(..., min_length=1)
     use_folders: bool = Field(default=True)
     entity_path: str | None = Field(default=None, validate_default=True)
+    repository_path: str | None = Field(default=None, validate_default=True)
 
     @field_validator("base_dir", mode="before")
     @classmethod
@@ -68,6 +75,17 @@ class AddElementConfig(BaseModel):
 
         return validate_repository_entity_path(v)
 
+    @field_validator("repository_path", mode="after")
+    @classmethod
+    def validate_repository_path(cls, v: str | None, info: ValidationInfo) -> str | None:
+        if info.data.get("element_type") != ElementTypeEnum.SERVICE:
+            return v
+
+        if v is None:
+            return ask_repository_path()
+
+        return validate_service_repository_path(v)
+
     @property
     def structure(self) -> str:
         return "folder" if self.use_folders else "flat"
@@ -88,6 +106,16 @@ class AddElementConfig(BaseModel):
                 {
                     "entity_import_path": import_path,
                     "entity_class_name": class_name,
+                }
+            )
+
+        if self.repository_path:
+            import_path = self.repository_path.rsplit(".", 1)[0]
+            class_name = self.repository_path.rsplit(".", 1)[1]
+            context.update(
+                {
+                    "repository_import_path": import_path,
+                    "repository_class_name": class_name,
                 }
             )
 

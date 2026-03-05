@@ -1,1 +1,1 @@
-__all__ = ["add_entity_helper", "add_repository_helper"]
+__all__ = ["add_entity_helper", "add_repository_helper", "add_service_helper"]
