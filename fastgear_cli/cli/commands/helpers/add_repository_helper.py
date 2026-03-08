@@ -14,7 +14,15 @@ if TYPE_CHECKING:
     from fastgear_cli.core.models import AddElementConfig
 
 
-def ask_entity_path() -> str:
+def ask_entity_path() -> str | None:
+    should_use_entity = questionary.confirm(
+        "Do you want to inject an entity into this repository?",
+        default=False,
+    ).ask()
+
+    if not should_use_entity:
+        return None
+
     response = questionary.text("Entity import path (e.g. src.modules.user.entities.User):").ask()
     resolved_entity_path = response.strip() if response else ""
     return validate_entity_path(resolved_entity_path)

@@ -49,12 +49,43 @@ class TestAddCommand:
         assert "AsyncBaseRepository[Order]" in repository_content
         assert "class OrderRepository" in repository_file.read_text(encoding="utf-8")
 
-    @pytest.mark.it("✅  Should ask for entity path when adding repository without flag")
-    def test_asks_for_entity_path_when_not_passed(
+    @pytest.mark.it("✅  Should create repository without entity when user declines prompt")
+    def test_creates_repository_without_entity_when_user_declines_prompt(
         self,
         temp_path: Path,
         mocker,
     ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+        mock_text = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.text"
+        )
+
+        result = runner.invoke(add_app, ["repository", "invoice", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        mock_text.assert_not_called()
+        repository_file = temp_path / "repositories/invoice_repository.py"
+        assert repository_file.exists()
+        content = repository_file.read_text(encoding="utf-8")
+        assert "from src.modules" not in content
+        assert "from .entities" not in content
+        assert "from ..entities" not in content
+        assert "class InvoiceRepository:" in content
+        assert "pass" in content
+
+    @pytest.mark.it("✅  Should ask entity path when adding repository and user wants it")
+    def test_asks_entity_path_when_adding_repository_and_user_wants_it(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = True
         mock_text = mocker.patch(
             "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.text"
         )
@@ -71,22 +102,6 @@ class TestAddCommand:
             "from src.modules.billing.entities.invoice_entity import Invoice"
             in repository_file.read_text(encoding="utf-8")
         )
-
-    @pytest.mark.it("❌  Should fail when repository entity path is not provided")
-    def test_fails_when_repository_entity_path_not_provided(
-        self,
-        temp_path: Path,
-        mocker,
-    ):
-        mock_text = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.text"
-        )
-        mock_text.return_value.ask.return_value = ""
-
-        result = runner.invoke(add_app, ["repository", "invoice", "--path", str(temp_path)])
-
-        assert result.exit_code == 1
-        assert "Entity path is required when adding a repository." in result.output
 
     @pytest.mark.it("❌  Should fail with invalid repository entity path")
     def test_fails_with_invalid_repository_entity_path(self, temp_path: Path):
