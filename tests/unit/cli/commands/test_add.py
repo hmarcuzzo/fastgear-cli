@@ -263,3 +263,130 @@ class TestAddCommand:
 
         assert result.exit_code == 1
         assert "Invalid repository path." in result.output
+
+    @pytest.mark.it("✅  Should create controller files without service")
+    def test_creates_controller_files_without_service(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        result = runner.invoke(add_app, ["controller", "billing", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        assert (temp_path / "controllers/__init__.py").exists()
+        init_content = (temp_path / "controllers/__init__.py").read_text(encoding="utf-8")
+        assert "from .billing_controller import billing_router" in init_content
+        assert "billing_router" in init_content
+        controller_file = temp_path / "controllers/billing_controller.py"
+        assert controller_file.exists()
+        controller_content = controller_file.read_text(encoding="utf-8")
+        assert "from fastapi import APIRouter" in controller_content
+        assert "from fastgear.decorators import controller" in controller_content
+        assert "billing_router = APIRouter(tags=[" in controller_content
+        assert "@controller(billing_router)" in controller_content
+        assert "class BillingController" in controller_content
+        assert "pass" in controller_content
+
+    @pytest.mark.it("✅  Should create controller files with service via option")
+    def test_creates_controller_files_with_service_option(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "controller",
+                "order",
+                "--path",
+                str(temp_path),
+                "--service-path",
+                "src.modules.sales.services.order_service.OrderService",
+            ],
+        )
+
+        assert result.exit_code == 0
+        controller_file = temp_path / "controllers/order_controller.py"
+        assert controller_file.exists()
+        controller_content = controller_file.read_text(encoding="utf-8")
+        assert "from fastapi import APIRouter" in controller_content
+        assert "from fastgear.decorators import controller" in controller_content
+        assert "order_router = APIRouter(tags=[" in controller_content
+        assert "@controller(order_router)" in controller_content
+        assert (
+            "from src.modules.sales.services.order_service import OrderService"
+            in controller_content
+        )
+        assert "def __init__(self, service: OrderService = None)" in controller_content
+        assert "self.service = service or OrderService()" in controller_content
+
+    @pytest.mark.it("✅  Should ask for service path when adding controller and user wants it")
+    def test_asks_for_service_path_when_adding_controller(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = True
+        mock_text = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.text"
+        )
+        mock_text.return_value.ask.return_value = (
+            "src.modules.billing.services.invoice_service.InvoiceService"
+        )
+
+        result = runner.invoke(add_app, ["controller", "invoice", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        controller_file = temp_path / "controllers/invoice_controller.py"
+        assert controller_file.exists()
+        assert (
+            "from src.modules.billing.services.invoice_service import InvoiceService"
+            in controller_file.read_text(encoding="utf-8")
+        )
+
+    @pytest.mark.it("❌  Should fail with invalid controller service path")
+    def test_fails_with_invalid_controller_service_path(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "controller",
+                "invoice",
+                "--path",
+                str(temp_path),
+                "--service-path",
+                "invoice_service",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Invalid service path." in result.output
+
+    @pytest.mark.it("✅  Should update controllers __init__ when it already exists")
+    def test_updates_controllers_init_when_it_already_exists(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        existing_init = temp_path / "controllers/__init__.py"
+        existing_init.parent.mkdir(parents=True, exist_ok=True)
+        existing_init.write_text(
+            'from .customer_controller import customer_router\n\n__all__ = ["customer_router"]\n',
+            encoding="utf-8",
+        )
+
+        result = runner.invoke(add_app, ["controller", "billing", "--path", str(temp_path)])
+
+        assert result.exit_code == 0
+        init_content = existing_init.read_text(encoding="utf-8")
+        assert "from .billing_controller import billing_router" in init_content
+        assert '"customer_router"' in init_content
+        assert '"billing_router"' in init_content

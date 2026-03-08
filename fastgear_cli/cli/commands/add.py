@@ -2,6 +2,7 @@ from pathlib import Path
 
 import typer
 
+from fastgear_cli.cli.commands.helpers.add_controller_helper import handle_controller_files
 from fastgear_cli.cli.commands.helpers.add_entity_helper import handle_entity_files
 from fastgear_cli.core.constants.enums import ElementTypeEnum
 from fastgear_cli.core.filesystem import create_template
@@ -41,6 +42,11 @@ def add(
         "--repository-path",
         help="Repository import path used by service (optional, e.g. src.modules.user.repositories.user_repository.UserRepository)",
     ),
+    service_path: str | None = typer.Option(
+        None,
+        "--service-path",
+        help="Service import path used by controller (optional, e.g. src.modules.user.services.user_service.UserService)",
+    ),
     dry_run: bool = typer.Option(
         False,
         "--dry-run",
@@ -55,6 +61,7 @@ def add(
         use_folders=use_folders,
         entity_path=entity_path,
         repository_path=repository_path,
+        service_path=service_path,
     )
 
     files = create_template(
@@ -65,6 +72,8 @@ def add(
     )
 
     match config.element_type:
+        case ElementTypeEnum.CONTROLLER:
+            files = handle_controller_files(config, dry_run=dry_run, files=files)
         case ElementTypeEnum.ENTITY:
             files = handle_entity_files(config, dry_run=dry_run, files=files)
 
