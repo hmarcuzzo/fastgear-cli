@@ -1,6 +1,6 @@
 import questionary
-import typer
 
+from fastgear_cli.core.exceptions import InvalidInputError
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
     is_valid_python_path,
@@ -26,25 +26,19 @@ def ask_repository_path() -> str | None:
 def validate_repository_path(value: str) -> str:
     resolved_repository_path = value.strip()
     if not resolved_repository_path:
-        typer.secho(
-            "Repository path is required when adding a service with repository.",
-            fg=typer.colors.RED,
+        raise InvalidInputError(
+            "Repository path is required when adding a service with repository."
         )
-        raise typer.Exit(code=1)
 
     if "." not in resolved_repository_path:
-        typer.secho(
-            "Invalid repository path. Use a full import path ending with the class name.",
-            fg=typer.colors.RED,
+        raise InvalidInputError(
+            "Invalid repository path. Use a full import path ending with the class name."
         )
-        raise typer.Exit(code=1)
 
     import_path, class_name = resolved_repository_path.rsplit(".", 1)
     if not is_valid_python_path(import_path) or not is_valid_python_identifier(class_name):
-        typer.secho(
-            "Invalid repository path. Use a full import path ending with the class name.",
-            fg=typer.colors.RED,
+        raise InvalidInputError(
+            "Invalid repository path. Use a full import path ending with the class name."
         )
-        raise typer.Exit(code=1)
 
     return resolved_repository_path

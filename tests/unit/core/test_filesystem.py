@@ -2,8 +2,8 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-import typer
 
+from fastgear_cli.core.exceptions import TemplateConflictError
 from fastgear_cli.core.filesystem import create_template
 
 pytest_plugins = ["tests.fixtures.core.filesystem_fixtures"]
@@ -108,7 +108,7 @@ class TestCreateProject:
         expected_template_root = fake_root / "templates" / "custom_template"
         assert call_args[0][0] == expected_template_root
 
-    @pytest.mark.it("❌  Should raise typer.Exit when no files are created")
+    @pytest.mark.it("❌  Should raise TemplateConflictError when no files are created")
     def test_raises_exit_when_no_files_are_created(
         self,
         mocker: MagicMock,
@@ -117,16 +117,11 @@ class TestCreateProject:
     ):
         mocker.patch("fastgear_cli.core.filesystem.ROOT_DIR", Path("/mock"))
         mocker.patch("fastgear_cli.core.filesystem.render_template", return_value=[])
-        mock_secho = mocker.patch("fastgear_cli.core.filesystem.typer.secho")
 
-        with pytest.raises(typer.Exit) as exc_info:
+        with pytest.raises(TemplateConflictError) as exc_info:
             create_template("new_project", output_directory, sample_context)
 
-        assert exc_info.value.exit_code == 1
-        mock_secho.assert_called_once_with(
-            "\nNo new files created. The content may already exist.",
-            fg=typer.colors.YELLOW,
-        )
+        assert str(exc_info.value) == "No new files created. The content may already exist."
 
 
 @pytest.mark.describe("🧪  CreateProjectIntegration")

@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import questionary
-import typer
 
+from fastgear_cli.core.exceptions import InvalidInputError
 from fastgear_cli.core.utils.init_file_utils import update_module_init
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
@@ -33,26 +33,18 @@ def ask_service_path() -> str | None:
 def validate_service_path(value: str) -> str:
     resolved_service_path = value.strip()
     if not resolved_service_path:
-        typer.secho(
-            "Service path is required when adding a controller with service.",
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(code=1)
+        raise InvalidInputError("Service path is required when adding a controller with service.")
 
     if "." not in resolved_service_path:
-        typer.secho(
-            "Invalid service path. Use a full import path ending with the class name.",
-            fg=typer.colors.RED,
+        raise InvalidInputError(
+            "Invalid service path. Use a full import path ending with the class name."
         )
-        raise typer.Exit(code=1)
 
     import_path, class_name = resolved_service_path.rsplit(".", 1)
     if not is_valid_python_path(import_path) or not is_valid_python_identifier(class_name):
-        typer.secho(
-            "Invalid service path. Use a full import path ending with the class name.",
-            fg=typer.colors.RED,
+        raise InvalidInputError(
+            "Invalid service path. Use a full import path ending with the class name."
         )
-        raise typer.Exit(code=1)
 
     return resolved_service_path
 

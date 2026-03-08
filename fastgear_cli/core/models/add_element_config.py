@@ -1,108 +1,47 @@
 import re
 from pathlib import Path
 
-import typer
 from pydantic import BaseModel, Field, field_validator
-from pydantic_core.core_schema import ValidationInfo
 
-from fastgear_cli.cli.commands.helpers.add_controller_helper import (
-    ask_service_path,
-)
-from fastgear_cli.cli.commands.helpers.add_controller_helper import (
-    validate_service_path as validate_controller_service_path,
-)
-from fastgear_cli.cli.commands.helpers.add_repository_helper import (
-    ask_entity_path,
-)
-from fastgear_cli.cli.commands.helpers.add_repository_helper import (
-    validate_entity_path as validate_repository_entity_path,
-)
-from fastgear_cli.cli.commands.helpers.add_service_helper import (
-    ask_repository_path,
-)
-from fastgear_cli.cli.commands.helpers.add_service_helper import (
-    validate_repository_path as validate_service_repository_path,
-)
 from fastgear_cli.core.constants.enums import ElementTypeEnum
+from fastgear_cli.core.exceptions import InvalidInputError
+
+
+def parse_element_type(value: str) -> ElementTypeEnum:
+    try:
+        return ElementTypeEnum(value.strip().lower())
+    except ValueError as error:
+        raise InvalidInputError(
+            "Invalid element type. Use one of: module | controller | service | entity | repository"
+        ) from error
+
+
+def normalize_element_name(value: str) -> str:
+    normalized = value.strip()
+    normalized = normalized.replace("-", "_").replace(" ", "_")
+    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", normalized)
+    normalized = re.sub(r"[^a-zA-Z0-9_]", "", normalized)
+    normalized = re.sub(r"_+", "_", normalized).strip("_").lower()
+
+    if not normalized:
+        raise InvalidInputError("Element name must contain letters or numbers.")
+
+    return normalized
 
 
 class AddElementConfig(BaseModel):
     base_dir: Path = Field(default_factory=Path.cwd)
-    element_type: ElementTypeEnum | str = Field(default=None)
+    element_type: ElementTypeEnum
     element_name: str = Field(..., min_length=1)
     use_folders: bool = Field(default=True)
-    entity_path: str | None = Field(default=None, validate_default=True)
-    repository_path: str | None = Field(default=None, validate_default=True)
-    service_path: str | None = Field(default=None, validate_default=True)
+    entity_path: str | None = Field(default=None)
+    repository_path: str | None = Field(default=None)
+    service_path: str | None = Field(default=None)
 
     @field_validator("base_dir", mode="before")
     @classmethod
     def normalize_base_dir(cls, v: str | None) -> Path:
         return Path.cwd() if v is None else Path(v)
-
-    @field_validator("element_type", mode="before")
-    @classmethod
-    def convert_element_type(cls, v: str) -> ElementTypeEnum:
-        try:
-            return ElementTypeEnum(v.strip().lower())
-        except ValueError:
-            typer.secho(
-                "Invalid element type. Use one of: module | controller | service | entity | repository",
-                fg=typer.colors.RED,
-            )
-            raise typer.Exit(code=1)
-
-    @field_validator("element_name", mode="before")
-    @classmethod
-    def normalize_element_name(cls, v: str) -> str:
-        v = v.strip()
-
-        v = v.replace("-", "_").replace(" ", "_")
-        v = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", v)
-        v = re.sub(r"[^a-zA-Z0-9_]", "", v)
-        v = re.sub(r"_+", "_", v).strip("_").lower()
-
-        if not v:
-            typer.secho(
-                "Element name must contain letters or numbers.",
-                fg=typer.colors.RED,
-            )
-            raise typer.Exit(code=1)
-
-        return v
-
-    @field_validator("entity_path", mode="after")
-    @classmethod
-    def validate_entity_path(cls, v: str | None, info: ValidationInfo) -> str | None:
-        if info.data.get("element_type") != ElementTypeEnum.REPOSITORY:
-            return v
-
-        if v is None:
-            return ask_entity_path()
-
-        return validate_repository_entity_path(v)
-
-    @field_validator("repository_path", mode="after")
-    @classmethod
-    def validate_repository_path(cls, v: str | None, info: ValidationInfo) -> str | None:
-        if info.data.get("element_type") != ElementTypeEnum.SERVICE:
-            return v
-
-        if v is None:
-            return ask_repository_path()
-
-        return validate_service_repository_path(v)
-
-    @field_validator("service_path", mode="after")
-    @classmethod
-    def validate_service_path(cls, v: str | None, info: ValidationInfo) -> str | None:
-        if info.data.get("element_type") != ElementTypeEnum.CONTROLLER:
-            return v
-
-        if v is None:
-            return ask_service_path()
-
-        return validate_controller_service_path(v)
 
     @property
     def structure(self) -> str:
