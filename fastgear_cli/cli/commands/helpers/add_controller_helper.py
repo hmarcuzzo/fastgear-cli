@@ -1,11 +1,10 @@
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import questionary
 import typer
 
-from fastgear_cli.core.render import run_ruff_format
+from fastgear_cli.core.utils.init_file_utils import update_module_init
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
     is_valid_python_path,
@@ -82,63 +81,11 @@ def _update_controllers_init(
     *,
     dry_run: bool,
 ) -> Path | None:
-    init_path = base_dir / "controllers" / "__init__.py"
-    router_name = f"{module_name}_router"
-    import_line = f"from .{module_name}_controller import {router_name}"
-
-    if not init_path.exists():
-        content = f'{import_line}\n\n__all__ = ["{router_name}"]\n'
-    else:
-        current = init_path.read_text(encoding="utf-8")
-        content = _merge_controller_init_content(current, import_line, router_name)
-        if content == current:
-            return None
-
-    if dry_run:
-        return init_path
-
-    init_path.parent.mkdir(parents=True, exist_ok=True)
-    init_path.write_text(content, encoding="utf-8")
-
-    run_ruff_format(init_path, base_dir)
-
-    return init_path
-
-
-def _merge_controller_init_content(
-    current: str,
-    import_line: str,
-    router_name: str,
-) -> str:
-    lines = current.splitlines()
-    if import_line not in lines:
-        insert_idx = 0
-        while insert_idx < len(lines) and (
-            lines[insert_idx].startswith("from ")
-            or lines[insert_idx].startswith("import ")
-            or not lines[insert_idx].strip()
-        ):
-            insert_idx += 1
-        lines.insert(insert_idx, import_line)
-        if insert_idx > 0 and lines[insert_idx - 1].strip():
-            lines.insert(insert_idx, "")
-
-    merged = "\n".join(lines).rstrip("\n")
-    all_match = re.search(r"__all__\s*=\s*\[(.*?)\]", merged, re.DOTALL)
-
-    if all_match:
-        raw_items = all_match.group(1)
-        values = re.findall(r"""["']([^"']+)["']""", raw_items)
-        if not values:
-            values = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", raw_items)
-        if router_name not in values:
-            values.append(router_name)
-        quoted_values = ", ".join(f'"{item}"' for item in values)
-        all_value = f"__all__ = [{quoted_values}]"
-        merged = f"{merged[: all_match.start()]}{all_value}{merged[all_match.end() :]}"
-    else:
-        if merged and not merged.endswith("\n\n"):
-            merged = f"{merged}\n\n"
-        merged = f'{merged}__all__ = ["{router_name}"]'
-
-    return f"{merged.rstrip()}\n"
+    return update_module_init(
+        base_dir=base_dir,
+        module_dir="controllers",
+        module_name=module_name,
+        symbol_name=f"{module_name}_router",
+        source_suffix="controller",
+        dry_run=dry_run,
+    )
