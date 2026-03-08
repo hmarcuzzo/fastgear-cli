@@ -152,6 +152,45 @@ Create a project in a specific location:
 fg init ~/projects/new-api
 ```
 
+### Add Components to an Existing Module
+
+Create an entity:
+
+```bash
+fg add entity user --path src/modules/user
+```
+
+Create a service and inject a repository explicitly:
+
+```bash
+fg add service user --path src/modules/user \
+  --repository-path src.modules.user.repositories.UserRepository
+```
+
+Create a repository and choose interactively whether to inject an entity:
+
+```bash
+fg add repository user --path src/modules/user
+```
+
+Create a full module and choose components interactively:
+
+```bash
+fg add module user --path src/modules
+```
+
+Create a module non-interactively:
+
+```bash
+fg add module user --path src/modules \
+  --module-components entity,repository,service,controller
+```
+
+Preview created files without writing:
+
+```bash
+fg add module user --path src/modules --module-components service,controller --dry-run
+```
 
 ## 🎯 Commands
 
@@ -178,6 +217,39 @@ fg init [DIRECTORY] [OPTIONS]
 4. **Use AI agent tools?** - Include AI development tools configuration
 5. **Use CI/CD pipeline?** - Include continuous integration/deployment setup
 6. **Select CI/CD provider** - Choose your CI/CD platform (if enabled)
+
+### `add`
+
+Add components to an existing project/module.
+
+**Usage:**
+```bash
+fg add [ELEMENT_TYPE] [ELEMENT_NAME] [OPTIONS]
+```
+
+**Element types:**
+- `entity`
+- `repository`
+- `service`
+- `controller`
+- `module`
+
+**Arguments:**
+- `ELEMENT_TYPE` - Component type to generate
+- `ELEMENT_NAME` - Component/module name (normalized to snake_case)
+
+**Common options:**
+- `--path`, `-p` - Base directory where files are generated (default: current directory)
+- `--use-folders/--no-use-folders` - Generate in folders (`entities/`, `services/`, etc.) or flat files
+- `--dry-run`, `-n` - Preview output without writing files
+
+**Dependency options:**
+- `--entity-path` - Entity import path used by `repository`
+- `--repository-path` - Repository import path used by `service`
+- `--service-path` - Service import path used by `controller`
+
+**Module option:**
+- `--module-components` - Comma-separated list for `module`: `entity,repository,service,controller`
 
 
 ## 📝 License
