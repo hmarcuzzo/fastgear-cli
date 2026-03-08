@@ -1,0 +1,18 @@
+from fastapi import APIRouter
+from fastgear.decorators import controller
+{% if service_import_path %}
+from {{ service_import_path }} import {{ service_class_name }}
+{% endif %}
+
+{{ element_name }}_router = APIRouter(tags=["{{ element_class_name }}"])
+
+
+@controller({{ element_name }}_router)
+{% if service_import_path -%}
+class {{ element_class_name }}Controller:
+    def __init__(self, service: {{ service_class_name }} = None):
+        self.service = service or {{ service_class_name }}()
+{% else -%}
+class {{ element_class_name }}Controller:
+    pass
+{% endif -%}
