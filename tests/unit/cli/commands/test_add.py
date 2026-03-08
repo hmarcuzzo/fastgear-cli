@@ -390,3 +390,289 @@ class TestAddCommand:
         assert "from .billing_controller import billing_router" in init_content
         assert '"customer_router"' in init_content
         assert '"billing_router"' in init_content
+
+    @pytest.mark.it("✅  Should inject service into controller when both are selected for module")
+    def test_injects_service_into_controller_when_both_selected_for_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "service,controller",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert (modules_root / "billing" / "__init__.py").exists()
+        controller_file = modules_root / "billing" / "controllers" / "billing_controller.py"
+        assert controller_file.exists()
+        content = controller_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.services import BillingService" in content
+        assert "def __init__(self, service: BillingService = None)" in content
+        assert "self.service = service or BillingService()" in content
+
+    @pytest.mark.it(
+        "✅  Should create controller without service when service is not selected in module"
+    )
+    def test_creates_controller_without_service_when_service_not_selected_in_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "controller",
+            ],
+        )
+
+        assert result.exit_code == 0
+        controller_file = modules_root / "billing" / "controllers" / "billing_controller.py"
+        assert controller_file.exists()
+        content = controller_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.services import BillingService" not in content
+        assert "self.service = service or BillingService()" not in content
+        assert "class BillingController" in content
+        assert "pass" in content
+
+    @pytest.mark.it("✅  Should inject repository into service when both are selected for module")
+    def test_injects_repository_into_service_when_both_selected_for_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "service,repository",
+            ],
+        )
+
+        assert result.exit_code == 0
+        service_file = modules_root / "billing" / "services" / "billing_service.py"
+        assert service_file.exists()
+        content = service_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.repositories import BillingRepository" in content
+        assert "def __init__(self, repository: BillingRepository = None)" in content
+        assert "self.repository = repository or BillingRepository()" in content
+
+    @pytest.mark.it(
+        "✅  Should create service without repository when repository is not selected in module"
+    )
+    def test_creates_service_without_repository_when_repository_not_selected_in_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "service",
+            ],
+        )
+
+        assert result.exit_code == 0
+        service_file = modules_root / "billing" / "services" / "billing_service.py"
+        assert service_file.exists()
+        content = service_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.repositories import BillingRepository" not in content
+        assert "self.repository = repository or BillingRepository()" not in content
+        assert "class BillingService" in content
+        assert "pass" in content
+
+    @pytest.mark.it("✅  Should inject entity into repository when both are selected for module")
+    def test_injects_entity_into_repository_when_both_selected_for_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "repository,entity",
+            ],
+        )
+
+        assert result.exit_code == 0
+        repository_file = modules_root / "billing" / "repositories" / "billing_repository.py"
+        assert repository_file.exists()
+        content = repository_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.entities import Billing" in content
+        assert "class BillingRepository(AsyncBaseRepository[Billing])" in content
+        assert "super().__init__(Billing)" in content
+
+    @pytest.mark.it(
+        "✅  Should create repository without entity when entity is not selected in module"
+    )
+    def test_creates_repository_without_entity_when_entity_not_selected_in_module(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "repository",
+            ],
+        )
+
+        assert result.exit_code == 0
+        repository_file = modules_root / "billing" / "repositories" / "billing_repository.py"
+        assert repository_file.exists()
+        content = repository_file.read_text(encoding="utf-8")
+        assert "from src.modules.billing.entities import Billing" not in content
+        assert "class BillingRepository:" in content
+        assert "pass" in content
+
+    @pytest.mark.it("✅  Should create only selected module components")
+    def test_creates_only_selected_module_components(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "entity,service",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert (modules_root / "billing" / "entities" / "__init__.py").exists()
+        assert (modules_root / "billing" / "entities" / "billing_entity.py").exists()
+        assert (modules_root / "billing" / "services" / "billing_service.py").exists()
+        assert not (modules_root / "billing" / "controllers").exists()
+        assert not (modules_root / "billing" / "repositories").exists()
+
+    @pytest.mark.it("✅  Should ask module components when option is not provided")
+    def test_asks_module_components_when_option_is_not_provided(
+        self,
+        temp_path: Path,
+        mocker,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        mock_checkbox = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_module_helper.questionary.checkbox"
+        )
+        mock_checkbox.return_value.ask.return_value = ["controller", "entity"]
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        result = runner.invoke(add_app, ["module", "sales", "--path", str(modules_root)])
+
+        assert result.exit_code == 0
+        assert (modules_root / "sales" / "entities" / "sales_entity.py").exists()
+        assert (modules_root / "sales" / "controllers" / "sales_controller.py").exists()
+
+    @pytest.mark.it("❌  Should fail when module component is invalid")
+    def test_fails_when_module_component_is_invalid(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "sales",
+                "--path",
+                str(temp_path),
+                "--module-components",
+                "invalid",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Invalid module component" in result.output
+
+    @pytest.mark.it("❌  Should fail when module has no selected components")
+    def test_fails_when_module_has_no_selected_components(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_checkbox = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add_module_helper.questionary.checkbox"
+        )
+        mock_checkbox.return_value.ask.return_value = []
+
+        result = runner.invoke(add_app, ["module", "sales", "--path", str(temp_path)])
+
+        assert result.exit_code == 1
+        assert "At least one component is required for module." in result.output
+
+    @pytest.mark.it("❌  Should fail when module-components is used with non-module element")
+    def test_fails_when_module_components_used_with_non_module(self, temp_path: Path):
+        result = runner.invoke(
+            add_app,
+            [
+                "entity",
+                "sales",
+                "--path",
+                str(temp_path),
+                "--module-components",
+                "entity",
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "--module-components can only be used with element type module." in result.output
