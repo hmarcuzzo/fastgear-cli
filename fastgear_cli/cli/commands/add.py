@@ -29,7 +29,7 @@ from fastgear_cli.core.utils.file_tree_utils import FileTreeUtils
 
 add_app = typer.Typer(help="Add new components to an existing FastGear project")
 
-AddFileHandler = Callable[[AddElementConfig, bool, list[Path]], list[Path]]
+type AddFileHandler = Callable[..., list[Path]]
 ADD_FILE_HANDLERS: dict[ElementTypeEnum, AddFileHandler] = {
     ElementTypeEnum.CONTROLLER: handle_controller_files,
     ElementTypeEnum.ENTITY: handle_entity_files,

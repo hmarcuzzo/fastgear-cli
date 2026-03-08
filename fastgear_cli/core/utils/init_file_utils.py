@@ -52,7 +52,7 @@ def merge_module_init_content(
             lines.insert(insert_idx, "")
 
     merged = "\n".join(lines).rstrip("\n")
-    all_match = re.search(r"__all__\s*=\s*\[(.*?)\]", merged, re.DOTALL)
+    all_match = re.search(r"__all__\s*=\s*\[(.*?)]", merged, re.DOTALL)
 
     if all_match:
         raw_items = all_match.group(1)
