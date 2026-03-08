@@ -339,22 +339,19 @@ def _resolve_paths(
     resolved_repository_path = repository_path
     resolved_service_path = service_path
 
-    if element_type == ElementTypeEnum.REPOSITORY:
-        if resolved_entity_path is None:
-            resolved_entity_path = ask_entity_path()
-        else:
-            resolved_entity_path = validate_entity_path(resolved_entity_path)
+    if element_type == ElementTypeEnum.REPOSITORY and resolved_entity_path is None:
+        resolved_entity_path = ask_entity_path()
+    elif element_type == ElementTypeEnum.REPOSITORY:
+        resolved_entity_path = validate_entity_path(resolved_entity_path)
 
-    if element_type == ElementTypeEnum.SERVICE:
-        if resolved_repository_path is None:
-            resolved_repository_path = ask_repository_path()
-        else:
-            resolved_repository_path = validate_repository_path(resolved_repository_path)
+    if element_type == ElementTypeEnum.SERVICE and resolved_repository_path is None:
+        resolved_repository_path = ask_repository_path()
+    elif element_type == ElementTypeEnum.SERVICE:
+        resolved_repository_path = validate_repository_path(resolved_repository_path)
 
-    if element_type == ElementTypeEnum.CONTROLLER:
-        if resolved_service_path is None:
-            resolved_service_path = ask_service_path()
-        else:
-            resolved_service_path = validate_service_path(resolved_service_path)
+    if element_type == ElementTypeEnum.CONTROLLER and resolved_service_path is None:
+        resolved_service_path = ask_service_path()
+    elif element_type == ElementTypeEnum.CONTROLLER:
+        resolved_service_path = validate_service_path(resolved_service_path)
 
     return resolved_entity_path, resolved_repository_path, resolved_service_path
