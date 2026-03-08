@@ -1,10 +1,17 @@
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 import questionary
 
 from fastgear_cli.core.exceptions import InvalidInputError
+from fastgear_cli.core.utils.init_file_utils import update_module_init
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
     is_valid_python_path,
 )
+
+if TYPE_CHECKING:
+    from fastgear_cli.core.models import AddElementConfig
 
 
 def ask_entity_path() -> str:
@@ -30,3 +37,39 @@ def validate_entity_path(value: str) -> str:
         )
 
     return resolved_entity_path
+
+
+def handle_repository_files(
+    config: "AddElementConfig",
+    *,
+    dry_run: bool,
+    files: list[Path],
+) -> list[Path]:
+    if config.use_folders:
+        init_file = _update_repositories_init(
+            config.base_dir,
+            config.element_name,
+            config.context["element_class_name"],
+            dry_run=dry_run,
+        )
+        if init_file and init_file not in files:
+            files.append(init_file)
+
+    return files
+
+
+def _update_repositories_init(
+    base_dir: Path,
+    module_name: str,
+    module_class_name: str,
+    *,
+    dry_run: bool,
+) -> Path | None:
+    return update_module_init(
+        base_dir=base_dir,
+        module_dir="repositories",
+        module_name=module_name,
+        symbol_name=f"{module_class_name}Repository",
+        source_suffix="repository",
+        dry_run=dry_run,
+    )
