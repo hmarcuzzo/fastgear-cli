@@ -11,6 +11,7 @@ from fastgear_cli.cli.prompts.init_project import (
     ask_project_name,
     confirm_project_title,
 )
+from fastgear_cli.core.exceptions import TemplateConflictError
 from fastgear_cli.core.filesystem import create_template
 from fastgear_cli.core.models import ProjectInitConfig
 from fastgear_cli.core.utils.file_tree_utils import FileTreeUtils
@@ -32,21 +33,25 @@ def init(
         help="Show what files would be created without actually creating them",
     ),
 ):
-    base_dir = path if path else Path.cwd()
+    try:
+        base_dir = path or Path.cwd()
 
-    config = _collect_project_info(base_dir)
-    files = _generate_project(config, dry_run=dry_run)
+        config = _collect_project_info(base_dir)
+        files = _generate_project(config, dry_run=dry_run)
 
-    if dry_run:
-        FileTreeUtils.display_dry_run_output(files, base_dir)
-        return
+        if dry_run:
+            FileTreeUtils.display_dry_run_output(files, base_dir)
+            return
 
-    _run_uv_lock(config.project_dir)
+        _run_uv_lock(config.project_dir)
 
-    typer.secho(
-        f"\n🎉  Project '{config.project_name}' created successfully!",
-        fg=typer.colors.GREEN,
-    )
+        typer.secho(
+            f"\n🎉  Project '{config.project_name}' created successfully!",
+            fg=typer.colors.GREEN,
+        )
+    except TemplateConflictError as error:
+        typer.secho(str(error), fg=typer.colors.RED)
+        raise typer.Exit(code=1) from error
 
 
 def _collect_project_info(base_dir: Path) -> ProjectInitConfig:
@@ -71,6 +76,9 @@ def _collect_project_info(base_dir: Path) -> ProjectInitConfig:
 
 
 def _generate_project(config: ProjectInitConfig, *, dry_run: bool) -> list[Path]:
+    if config.project_dir.exists() and any(config.project_dir.iterdir()):
+        raise TemplateConflictError(f"Directory '{config.project_dir}' already exists.")
+
     try:
         return create_template(
             "new_project",
@@ -80,12 +88,8 @@ def _generate_project(config: ProjectInitConfig, *, dry_run: bool) -> list[Path]
             config.conditional_dirs,
             dry_run=dry_run,
         )
-    except FileExistsError:
-        typer.secho(
-            f"Directory '{config.project_dir}' already exists.",
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(code=1)
+    except FileExistsError as error:
+        raise TemplateConflictError(f"Directory '{config.project_dir}' already exists.") from error
 
 
 def _run_uv_lock(project_dir: Path) -> None:

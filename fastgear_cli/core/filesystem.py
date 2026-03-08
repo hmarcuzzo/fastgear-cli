@@ -1,8 +1,7 @@
 from pathlib import Path
 
-import typer
-
 from fastgear_cli.configs.settings import ROOT_DIR
+from fastgear_cli.core.exceptions import TemplateConflictError
 from fastgear_cli.core.render import render_template
 
 
@@ -29,10 +28,6 @@ def create_template(
     )
 
     if not files:
-        typer.secho(
-            "\nNo new files created. The content may already exist.",
-            fg=typer.colors.YELLOW,
-        )
-        raise typer.Exit(code=1)
+        raise TemplateConflictError("No new files created. The content may already exist.")
 
     return files
