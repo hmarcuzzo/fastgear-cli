@@ -434,6 +434,126 @@ class TestAddCommand:
         assert "def __init__(self, service: BillingService = None)" in content
         assert "self.service = service or BillingService()" in content
 
+    @pytest.mark.it("✅  Should create module __init__ with router include for folder structure")
+    def test_creates_module_init_with_router_include_for_folder_structure(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "controller",
+            ],
+        )
+
+        assert result.exit_code == 0
+        module_init = modules_root / "billing" / "__init__.py"
+        assert module_init.exists()
+        content = module_init.read_text(encoding="utf-8")
+        assert "from fastapi import APIRouter" in content
+        assert "from .controllers import billing_router" in content
+        assert "billing_module_router = APIRouter()" in content
+        assert "billing_module_router.include_router(billing_router)" in content
+
+    @pytest.mark.it("✅  Should create module __init__ with router include for flat structure")
+    def test_creates_module_init_with_router_include_for_flat_structure(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "controller",
+                "--no-use-folders",
+            ],
+        )
+
+        assert result.exit_code == 0
+        module_init = modules_root / "billing" / "__init__.py"
+        assert module_init.exists()
+        content = module_init.read_text(encoding="utf-8")
+        assert "from fastapi import APIRouter" in content
+        assert "from .billing_controller import billing_router" in content
+        assert "billing_module_router = APIRouter()" in content
+        assert "billing_module_router.include_router(billing_router)" in content
+
+    @pytest.mark.it("✅  Should create module __init__ with entities list for folder structure")
+    def test_creates_module_init_with_entities_list_for_folder_structure(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "entity",
+            ],
+        )
+
+        assert result.exit_code == 0
+        module_init = modules_root / "billing" / "__init__.py"
+        assert module_init.exists()
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .entities import Billing" in content
+        assert "billing_entities = [Billing]" in content
+        assert "billing_module_router = APIRouter()" not in content
+
+    @pytest.mark.it("✅  Should create module __init__ with entities list for flat structure")
+    def test_creates_module_init_with_entities_list_for_flat_structure(
+        self,
+        temp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.chdir(temp_path)
+        modules_root = temp_path / "src" / "modules"
+
+        result = runner.invoke(
+            add_app,
+            [
+                "module",
+                "billing",
+                "--path",
+                str(modules_root),
+                "--module-components",
+                "entity",
+                "--no-use-folders",
+            ],
+        )
+
+        assert result.exit_code == 0
+        module_init = modules_root / "billing" / "__init__.py"
+        assert module_init.exists()
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .billing_entity import Billing" in content
+        assert "billing_entities = [Billing]" in content
+        assert "billing_module_router = APIRouter()" not in content
+
     @pytest.mark.it(
         "✅  Should create controller without service when service is not selected in module"
     )
@@ -612,6 +732,12 @@ class TestAddCommand:
         assert (modules_root / "billing" / "entities" / "__init__.py").exists()
         assert (modules_root / "billing" / "entities" / "billing_entity.py").exists()
         assert (modules_root / "billing" / "services" / "billing_service.py").exists()
+        module_init = modules_root / "billing" / "__init__.py"
+        assert module_init.exists()
+        module_init_content = module_init.read_text(encoding="utf-8")
+        assert "from .entities import Billing" in module_init_content
+        assert "billing_entities = [Billing]" in module_init_content
+        assert "billing_module_router = APIRouter()" not in module_init_content
         assert not (modules_root / "billing" / "controllers").exists()
         assert not (modules_root / "billing" / "repositories").exists()
 

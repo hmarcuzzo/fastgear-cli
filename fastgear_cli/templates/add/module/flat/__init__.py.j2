@@ -1,0 +1,22 @@
+{% if has_controller %}
+from fastapi import APIRouter
+{% endif %}
+{% if has_controller %}
+from .{{ module_name }}_controller import {{ module_name }}_router
+{% endif %}
+{% if has_entity %}
+from .{{ module_name }}_entity import {{ module_class_name }}
+{% endif %}
+{% if has_controller or has_entity %}
+
+{% endif %}
+{% if has_controller %}
+{{ module_name }}_module_router = APIRouter()
+{{ module_name }}_module_router.include_router({{ module_name }}_router)
+{% endif %}
+{% if has_controller and has_entity %}
+
+{% endif %}
+{% if has_entity %}
+{{ module_name }}_entities = [{{ module_class_name }}]
+{% endif %}
