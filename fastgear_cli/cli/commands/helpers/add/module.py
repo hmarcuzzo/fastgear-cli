@@ -1,14 +1,18 @@
+import re
 from pathlib import Path
 
 import questionary
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from fastgear_cli.cli.commands.helpers.add.controller import validate_service_path
 from fastgear_cli.cli.commands.helpers.add.handler import create_component_files
 from fastgear_cli.cli.commands.helpers.add.repository import validate_entity_path
 from fastgear_cli.cli.commands.helpers.add.service import validate_repository_path
+from fastgear_cli.configs.settings import ROOT_DIR
 from fastgear_cli.core.constants.enums import ElementTypeEnum
 from fastgear_cli.core.exceptions import InvalidInputError, TemplateConflictError
 from fastgear_cli.core.models import AddElementConfig
+from fastgear_cli.core.render import run_ruff_format
 
 MODULE_PROMPT_CHOICES = (
     ElementTypeEnum.CONTROLLER,
@@ -40,13 +44,6 @@ def add_module(
     module_import_root = _resolve_module_import_root(base_dir=base_dir, module_name=module_name)
     created_files: list[Path] = []
 
-    module_init = module_dir / "__init__.py"
-    if not module_init.exists():
-        if not dry_run:
-            module_init.parent.mkdir(parents=True, exist_ok=True)
-            module_init.write_text("", encoding="utf-8")
-        created_files.append(module_init)
-
     for component in components:
         resolved_entity_path, resolved_repository_path, resolved_service_path = (
             _resolve_module_paths(
@@ -76,6 +73,17 @@ def add_module(
         except TemplateConflictError:
             continue
         _append_unique_files(created_files, component_files)
+
+    module_init = _update_module_init_from_template(
+        module_dir=module_dir,
+        module_name=module_name,
+        use_folders=use_folders,
+        has_controller=ElementTypeEnum.CONTROLLER in components,
+        has_entity=ElementTypeEnum.ENTITY in components,
+        dry_run=dry_run,
+    )
+    if module_init and module_init not in created_files:
+        created_files.append(module_init)
 
     if not created_files:
         raise TemplateConflictError("No new files created. The content may already exist.")
@@ -219,3 +227,216 @@ def _append_unique_files(base_files: list[Path], new_files: list[Path]) -> None:
     for file_path in new_files:
         if file_path not in base_files:
             base_files.append(file_path)
+
+
+def _update_module_init_from_template(
+    *,
+    module_dir: Path,
+    module_name: str,
+    use_folders: bool,
+    has_controller: bool,
+    has_entity: bool,
+    dry_run: bool,
+) -> Path | None:
+    init_path = module_dir / "__init__.py"
+    context = _build_module_template_context(
+        module_name=module_name,
+        has_controller=has_controller,
+        has_entity=has_entity,
+    )
+    template_content = _render_module_init_template(
+        use_folders=use_folders,
+        context=context,
+    )
+    if not has_controller and not has_entity:
+        template_content = ""
+
+    if not init_path.exists():
+        content = template_content
+        if dry_run:
+            return init_path
+
+        init_path.parent.mkdir(parents=True, exist_ok=True)
+        init_path.write_text(content, encoding="utf-8")
+        run_ruff_format(init_path, module_dir)
+        return init_path
+
+    if not template_content.strip():
+        return None
+
+    current_content = init_path.read_text(encoding="utf-8")
+    content = _merge_module_init_template_content(
+        current=current_content,
+        template_content=template_content,
+        module_name=module_name,
+    )
+    if content == current_content:
+        return None
+
+    if dry_run:
+        return init_path
+
+    init_path.write_text(content, encoding="utf-8")
+    run_ruff_format(init_path, module_dir)
+    return init_path
+
+
+def _build_module_template_context(
+    *,
+    module_name: str,
+    has_controller: bool,
+    has_entity: bool,
+) -> dict[str, str | bool]:
+    module_class_name = "".join(part.capitalize() for part in module_name.split("_") if part)
+    return {
+        "module_name": module_name,
+        "module_class_name": module_class_name,
+        "has_controller": has_controller,
+        "has_entity": has_entity,
+    }
+
+
+def _render_module_init_template(
+    *,
+    use_folders: bool,
+    context: dict[str, str | bool],
+) -> str:
+    template_dir = ROOT_DIR / "templates" / "add" / "module" / ("folder" if use_folders else "flat")
+    env = Environment(
+        loader=FileSystemLoader(str(template_dir)),
+        autoescape=select_autoescape(enabled_extensions=()),
+        keep_trailing_newline=True,
+    )
+    template = env.get_template("__init__.py.j2")
+    return template.render(**context)
+
+
+def _merge_module_init_template_content(
+    *,
+    current: str,
+    template_content: str,
+    module_name: str,
+) -> str:
+    merged = current
+    module_router_line = f"{module_name}_module_router = APIRouter()"
+
+    for template_line in template_content.splitlines():
+        line = template_line.strip()
+        if not line:
+            continue
+
+        parsed_assignment = _parse_symbol_list_assignment(line)
+        if parsed_assignment:
+            list_name, symbol_names = parsed_assignment
+            for symbol_name in symbol_names:
+                merged = _merge_symbol_list_assignment(
+                    current=merged,
+                    list_name=list_name,
+                    symbol_name=symbol_name,
+                )
+            continue
+
+        if line.startswith(f"{module_name}_module_router.include_router("):
+            merged = _merge_required_line(
+                current=merged,
+                required_line=line,
+                anchor_line=module_router_line,
+            )
+            continue
+
+        merged = _merge_required_line(current=merged, required_line=line)
+
+    return merged
+
+
+def _merge_required_line(
+    *,
+    current: str,
+    required_line: str,
+    anchor_line: str | None = None,
+) -> str:
+    lines = current.splitlines()
+    if required_line in lines:
+        return current
+
+    if required_line.startswith(("from ", "import ")):
+        lines = _ensure_import_line(lines, required_line)
+        return _lines_to_content(lines)
+
+    if anchor_line and anchor_line in lines:
+        anchor_index = lines.index(anchor_line)
+        lines.insert(anchor_index + 1, required_line)
+    else:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.append(required_line)
+
+    return _lines_to_content(lines)
+
+
+def _parse_symbol_list_assignment(line: str) -> tuple[str, list[str]] | None:
+    assignment_match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\[(.*)]", line)
+    if not assignment_match:
+        return None
+
+    list_name = assignment_match.group(1)
+    raw_values = assignment_match.group(2)
+    symbols = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", raw_values)
+    return list_name, symbols
+
+
+def _merge_symbol_list_assignment(
+    *,
+    current: str,
+    list_name: str,
+    symbol_name: str,
+) -> str:
+    assignment_pattern = re.compile(
+        rf"{re.escape(list_name)}\s*=\s*\[(.*?)]",
+        re.DOTALL,
+    )
+    assignment_match = assignment_pattern.search(current)
+
+    if assignment_match:
+        raw_values = assignment_match.group(1)
+        symbols = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", raw_values)
+        if symbol_name not in symbols:
+            symbols.append(symbol_name)
+
+        merged_assignment = f"{list_name} = [{', '.join(symbols)}]"
+        merged = (
+            f"{current[: assignment_match.start()]}"
+            f"{merged_assignment}"
+            f"{current[assignment_match.end() :]}"
+        )
+        return _lines_to_content(merged.splitlines())
+
+    return _merge_required_line(
+        current=current,
+        required_line=f"{list_name} = [{symbol_name}]",
+    )
+
+
+def _ensure_import_line(lines: list[str], import_line: str) -> list[str]:
+    if import_line in lines:
+        return lines
+
+    insert_idx = 0
+    while insert_idx < len(lines) and (
+        lines[insert_idx].startswith("from ")
+        or lines[insert_idx].startswith("import ")
+        or not lines[insert_idx].strip()
+    ):
+        insert_idx += 1
+
+    lines.insert(insert_idx, import_line)
+    if insert_idx > 0 and lines[insert_idx - 1].strip():
+        lines.insert(insert_idx, "")
+
+    return lines
+
+
+def _lines_to_content(lines: list[str]) -> str:
+    if not lines:
+        return ""
+    return f"{'\n'.join(lines).rstrip()}\n"
