@@ -181,6 +181,51 @@ class TestAddCommand:
         assert '"Customer"' in init_content
         assert '"Billing"' in init_content
 
+    @pytest.mark.it("✅  Should update parent module __init__ when adding entity in folder")
+    def test_updates_parent_module_init_when_adding_entity_in_folder(
+        self,
+        temp_path: Path,
+    ):
+        module_path = temp_path / "modules" / "billing"
+        module_path.mkdir(parents=True, exist_ok=True)
+        module_init = module_path / "__init__.py"
+        module_init.write_text(
+            "from .entities import Billing\n\nbilling_entities = [Billing]\n",
+            encoding="utf-8",
+        )
+
+        result = runner.invoke(add_app, ["entity", "invoice", "--path", str(module_path)])
+
+        assert result.exit_code == 0
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .entities import" in content
+        assert "Billing" in content
+        assert "Invoice" in content
+        assert "billing_entities = [Billing, Invoice]" in content
+
+    @pytest.mark.it("✅  Should update same-level __init__ when adding entity in flat")
+    def test_updates_same_level_init_when_adding_entity_in_flat(
+        self,
+        temp_path: Path,
+    ):
+        module_path = temp_path / "modules" / "billing"
+        module_path.mkdir(parents=True, exist_ok=True)
+        module_init = module_path / "__init__.py"
+        module_init.write_text(
+            "from .billing_entity import Billing\n\nbilling_entities = [Billing]\n",
+            encoding="utf-8",
+        )
+
+        result = runner.invoke(
+            add_app,
+            ["entity", "invoice", "--path", str(module_path), "--no-use-folders"],
+        )
+
+        assert result.exit_code == 0
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .invoice_entity import Invoice" in content
+        assert "billing_entities = [Billing, Invoice]" in content
+
     @pytest.mark.it("❌  Should fail with invalid element")
     def test_fails_with_invalid_element(self, temp_path: Path):
         result = runner.invoke(add_app, ["invalid", "customer", "--path", str(temp_path)])
@@ -403,6 +448,74 @@ class TestAddCommand:
         assert "from .billing_controller import billing_router" in init_content
         assert '"customer_router"' in init_content
         assert '"billing_router"' in init_content
+
+    @pytest.mark.it("✅  Should update parent module __init__ when adding controller in folder")
+    def test_updates_parent_module_init_when_adding_controller_in_folder(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        module_path = temp_path / "modules" / "billing"
+        module_path.mkdir(parents=True, exist_ok=True)
+        module_init = module_path / "__init__.py"
+        module_init.write_text(
+            (
+                "from fastapi import APIRouter\n"
+                "from .controllers import billing_router\n\n"
+                "billing_module_router = APIRouter()\n"
+                "billing_module_router.include_router(billing_router)\n"
+            ),
+            encoding="utf-8",
+        )
+
+        result = runner.invoke(add_app, ["controller", "invoice", "--path", str(module_path)])
+
+        assert result.exit_code == 0
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .controllers import" in content
+        assert "billing_router" in content
+        assert "invoice_router" in content
+        assert "billing_module_router.include_router(billing_router)" in content
+        assert "billing_module_router.include_router(invoice_router)" in content
+
+    @pytest.mark.it("✅  Should update same-level __init__ when adding controller in flat")
+    def test_updates_same_level_init_when_adding_controller_in_flat(
+        self,
+        temp_path: Path,
+        mocker,
+    ):
+        mock_confirm = mocker.patch(
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
+        )
+        mock_confirm.return_value.ask.return_value = False
+
+        module_path = temp_path / "modules" / "billing"
+        module_path.mkdir(parents=True, exist_ok=True)
+        module_init = module_path / "__init__.py"
+        module_init.write_text(
+            (
+                "from fastapi import APIRouter\n"
+                "from .billing_controller import billing_router\n\n"
+                "billing_module_router = APIRouter()\n"
+                "billing_module_router.include_router(billing_router)\n"
+            ),
+            encoding="utf-8",
+        )
+
+        result = runner.invoke(
+            add_app,
+            ["controller", "invoice", "--path", str(module_path), "--no-use-folders"],
+        )
+
+        assert result.exit_code == 0
+        content = module_init.read_text(encoding="utf-8")
+        assert "from .invoice_controller import invoice_router" in content
+        assert "billing_module_router.include_router(invoice_router)" in content
 
     @pytest.mark.it("✅  Should inject service into controller when both are selected for module")
     def test_injects_service_into_controller_when_both_selected_for_module(
