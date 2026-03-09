@@ -5,6 +5,7 @@ import questionary
 
 from fastgear_cli.core.exceptions import InvalidInputError
 from fastgear_cli.core.render import run_ruff_format
+from fastgear_cli.core.utils.init_content_merge_utils import merge_required_line
 from fastgear_cli.core.utils.init_file_utils import update_module_init
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
@@ -117,8 +118,8 @@ def _update_parent_module_router_init(
     )
     include_line = f"{module_name}_module_router.include_router({controller_name}_router)"
 
-    content = _merge_required_line(current=current_content, required_line=import_line)
-    content = _merge_required_line(
+    content = merge_required_line(current=current_content, required_line=import_line)
+    content = merge_required_line(
         current=content,
         required_line=include_line,
         anchor_line=router_anchor_line,
@@ -132,53 +133,3 @@ def _update_parent_module_router_init(
     init_path.write_text(content, encoding="utf-8")
     run_ruff_format(init_path, base_dir)
     return init_path
-
-
-def _merge_required_line(
-    *,
-    current: str,
-    required_line: str,
-    anchor_line: str | None = None,
-) -> str:
-    lines = current.splitlines()
-    if required_line in lines:
-        return current
-
-    if required_line.startswith(("from ", "import ")):
-        lines = _ensure_import_line(lines, required_line)
-        return _lines_to_content(lines)
-
-    if anchor_line and anchor_line in lines:
-        anchor_index = lines.index(anchor_line)
-        lines.insert(anchor_index + 1, required_line)
-    else:
-        if lines and lines[-1].strip():
-            lines.append("")
-        lines.append(required_line)
-
-    return _lines_to_content(lines)
-
-
-def _ensure_import_line(lines: list[str], import_line: str) -> list[str]:
-    if import_line in lines:
-        return lines
-
-    insert_idx = 0
-    while insert_idx < len(lines) and (
-        lines[insert_idx].startswith("from ")
-        or lines[insert_idx].startswith("import ")
-        or not lines[insert_idx].strip()
-    ):
-        insert_idx += 1
-
-    lines.insert(insert_idx, import_line)
-    if insert_idx > 0 and lines[insert_idx - 1].strip():
-        lines.insert(insert_idx, "")
-
-    return lines
-
-
-def _lines_to_content(lines: list[str]) -> str:
-    if not lines:
-        return ""
-    return f"{'\n'.join(lines).rstrip()}\n"
