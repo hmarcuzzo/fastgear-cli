@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import questionary
 
 from fastgear_cli.core.exceptions import InvalidInputError
+from fastgear_cli.core.render import run_ruff_format
 from fastgear_cli.core.utils.init_file_utils import update_module_init
 from fastgear_cli.core.utils.python_validators_utils import (
     is_valid_python_identifier,
@@ -56,13 +57,22 @@ def handle_controller_files(
     files: list[Path],
 ) -> list[Path]:
     if config.use_folders:
-        init_file = _update_controllers_init(
+        controllers_init_file = _update_controllers_init(
             config.base_dir,
             config.element_name,
             dry_run=dry_run,
         )
-        if init_file and init_file not in files:
-            files.append(init_file)
+        if controllers_init_file and controllers_init_file not in files:
+            files.append(controllers_init_file)
+
+    module_init_file = _update_parent_module_router_init(
+        base_dir=config.base_dir,
+        controller_name=config.element_name,
+        use_folders=config.use_folders,
+        dry_run=dry_run,
+    )
+    if module_init_file and module_init_file not in files:
+        files.append(module_init_file)
 
     return files
 
@@ -81,3 +91,94 @@ def _update_controllers_init(
         source_suffix="controller",
         dry_run=dry_run,
     )
+
+
+def _update_parent_module_router_init(
+    *,
+    base_dir: Path,
+    controller_name: str,
+    use_folders: bool,
+    dry_run: bool,
+) -> Path | None:
+    init_path = base_dir / "__init__.py"
+    if not init_path.exists():
+        return None
+
+    module_name = base_dir.name
+    router_anchor_line = f"{module_name}_module_router = APIRouter()"
+    current_content = init_path.read_text(encoding="utf-8")
+    if router_anchor_line not in current_content:
+        return None
+
+    import_line = (
+        f"from .controllers import {controller_name}_router"
+        if use_folders
+        else f"from .{controller_name}_controller import {controller_name}_router"
+    )
+    include_line = f"{module_name}_module_router.include_router({controller_name}_router)"
+
+    content = _merge_required_line(current=current_content, required_line=import_line)
+    content = _merge_required_line(
+        current=content,
+        required_line=include_line,
+        anchor_line=router_anchor_line,
+    )
+    if content == current_content:
+        return None
+
+    if dry_run:
+        return init_path
+
+    init_path.write_text(content, encoding="utf-8")
+    run_ruff_format(init_path, base_dir)
+    return init_path
+
+
+def _merge_required_line(
+    *,
+    current: str,
+    required_line: str,
+    anchor_line: str | None = None,
+) -> str:
+    lines = current.splitlines()
+    if required_line in lines:
+        return current
+
+    if required_line.startswith(("from ", "import ")):
+        lines = _ensure_import_line(lines, required_line)
+        return _lines_to_content(lines)
+
+    if anchor_line and anchor_line in lines:
+        anchor_index = lines.index(anchor_line)
+        lines.insert(anchor_index + 1, required_line)
+    else:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.append(required_line)
+
+    return _lines_to_content(lines)
+
+
+def _ensure_import_line(lines: list[str], import_line: str) -> list[str]:
+    if import_line in lines:
+        return lines
+
+    insert_idx = 0
+    while insert_idx < len(lines) and (
+        lines[insert_idx].startswith("from ")
+        or lines[insert_idx].startswith("import ")
+        or not lines[insert_idx].strip()
+    ):
+        insert_idx += 1
+
+    lines.insert(insert_idx, import_line)
+    if insert_idx > 0 and lines[insert_idx - 1].strip():
+        lines.insert(insert_idx, "")
+
+    return lines
+
+
+def _lines_to_content(lines: list[str]) -> str:
+    if not lines:
+        return ""
+    return f"{'\n'.join(lines).rstrip()}\n"
