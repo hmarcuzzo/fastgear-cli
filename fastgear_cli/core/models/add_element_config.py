@@ -1,32 +1,8 @@
-import re
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
 from fastgear_cli.core.constants.enums import ElementTypeEnum
-from fastgear_cli.core.exceptions import InvalidInputError
-
-
-def parse_element_type(value: str) -> ElementTypeEnum:
-    try:
-        return ElementTypeEnum(value.strip().lower())
-    except ValueError as error:
-        raise InvalidInputError(
-            "Invalid element type. Use one of: module | controller | service | entity | repository"
-        ) from error
-
-
-def normalize_element_name(value: str) -> str:
-    normalized = value.strip()
-    normalized = normalized.replace("-", "_").replace(" ", "_")
-    normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", normalized)
-    normalized = re.sub(r"[^a-zA-Z0-9_]", "", normalized)
-    normalized = re.sub(r"_+", "_", normalized).strip("_").lower()
-
-    if not normalized:
-        raise InvalidInputError("Element name must contain letters or numbers.")
-
-    return normalized
 
 
 class AddElementConfig(BaseModel):

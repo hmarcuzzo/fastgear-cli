@@ -56,11 +56,11 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.repository.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = False
         mock_text = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.text"
+            "fastgear_cli.cli.commands.helpers.add.repository.questionary.text"
         )
 
         result = runner.invoke(add_app, ["repository", "invoice", "--path", str(temp_path)])
@@ -83,11 +83,11 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.repository.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = True
         mock_text = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_repository_helper.questionary.text"
+            "fastgear_cli.cli.commands.helpers.add.repository.questionary.text"
         )
         mock_text.return_value.ask.return_value = (
             "src.modules.billing.entities.invoice_entity.Invoice"
@@ -195,7 +195,7 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.service.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = False
 
@@ -242,12 +242,10 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.service.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = True
-        mock_text = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_service_helper.questionary.text"
-        )
+        mock_text = mocker.patch("fastgear_cli.cli.commands.helpers.add.service.questionary.text")
         mock_text.return_value.ask.return_value = (
             "src.modules.billing.repositories.invoice_repository.InvoiceRepository"
         )
@@ -286,7 +284,7 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = False
 
@@ -343,11 +341,11 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = True
         mock_text = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.text"
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.text"
         )
         mock_text.return_value.ask.return_value = (
             "src.modules.billing.services.invoice_service.InvoiceService"
@@ -387,7 +385,7 @@ class TestAddCommand:
         mocker,
     ):
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = False
 
@@ -628,11 +626,11 @@ class TestAddCommand:
         modules_root = temp_path / "src" / "modules"
 
         mock_checkbox = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_module_helper.questionary.checkbox"
+            "fastgear_cli.cli.commands.helpers.add.module.questionary.checkbox"
         )
         mock_checkbox.return_value.ask.return_value = ["controller", "entity"]
         mock_confirm = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_controller_helper.questionary.confirm"
+            "fastgear_cli.cli.commands.helpers.add.controller.questionary.confirm"
         )
         mock_confirm.return_value.ask.return_value = False
 
@@ -666,7 +664,7 @@ class TestAddCommand:
         mocker,
     ):
         mock_checkbox = mocker.patch(
-            "fastgear_cli.cli.commands.helpers.add_module_helper.questionary.checkbox"
+            "fastgear_cli.cli.commands.helpers.add.module.questionary.checkbox"
         )
         mock_checkbox.return_value.ask.return_value = []
 
