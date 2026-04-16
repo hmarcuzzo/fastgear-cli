@@ -12,7 +12,8 @@ services:
     ports:
       - ${APP_PORT}:${APP_PORT}
     volumes:
-      - ../src:/app/src
+      - ..:/app
+      - {{ project_name }}-app-venv:/app/.venv
     environment:
       - PYTHONDONTWRITEBYTECODE=1
 {%- if use_database %}
@@ -41,6 +42,7 @@ services:
 
 volumes:
   {{ project_name }}-app-data:
+  {{ project_name }}-app-venv:
 
 {% if use_database -%}
 networks:
