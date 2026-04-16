@@ -1,11 +1,11 @@
-name: Audit
+name: Linting
 
 on:
   workflow_call:
 
 jobs:
-  audit:
-    name: Pip Audit
+  ruff:
+    name: Ruff
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,8 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Pip audit
-        run: |
-          uv export --no-dev --no-hashes --format requirements-txt > /tmp/requirements-audit.txt
-          uv run --with pip-audit pip-audit -r /tmp/requirements-audit.txt
+      - name: Ruff format check
+        run: uvx ruff format --check .
+
+      - name: Ruff lint
+        run: uvx ruff check .
