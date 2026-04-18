@@ -8,9 +8,6 @@ on:
       - completed
     branches:
       - main
-  push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   release:
@@ -18,9 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: >
-      github.event_name == 'push' ||
-      github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     outputs:
       released: ${{ steps.detect.outputs.release }}
 
@@ -34,27 +29,21 @@ jobs:
       - name: Detect release trigger
         id: detect
         run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            TAG="${GITHUB_REF#refs/tags/}"
-            echo "release=true" >> $GITHUB_OUTPUT
-            echo "version=$TAG" >> $GITHUB_OUTPUT
-          else
-            SHA="${{ github.event.workflow_run.head_sha }}"
-            COMMIT_MSG=$(git log -1 --pretty=%B "$SHA")
-            echo "Commit: $COMMIT_MSG"
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          COMMIT_MSG=$(git log -1 --pretty=%B "$SHA")
+          echo "Commit: $COMMIT_MSG"
 
-            if echo "$COMMIT_MSG" | grep -qF "🔖 Release version"; then
-              VERSION=$(echo "$COMMIT_MSG" | grep -oP "(?<=🔖 Release version )\S+")
-              echo "release=true" >> $GITHUB_OUTPUT
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-            else
-              echo "release=false" >> $GITHUB_OUTPUT
-            fi
+          if echo "$COMMIT_MSG" | grep -qF "🔖 Release version"; then
+            VERSION=$(echo "$COMMIT_MSG" | grep -oP "(?<=🔖 Release version )\S+")
+            echo "release=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "release=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create GitHub Release
         if: steps.detect.outputs.release == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.detect.outputs.version }}
           name: "${{ steps.detect.outputs.version }}"
