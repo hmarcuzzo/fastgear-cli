@@ -1,4 +1,5 @@
 import pytest
+
 from src.modules.app.app_service import AppService
 
 
