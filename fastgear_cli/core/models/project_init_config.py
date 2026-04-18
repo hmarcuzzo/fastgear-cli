@@ -82,7 +82,7 @@ class ProjectInitConfig(BaseModel):
     def _get_dependencies(self) -> list[str]:
         deps = [
             "fastapi>=0.128.0",
-            "fastgear>=0.7.0" if not self.use_database else "fastgear[sqlalchemy]>=0.8.1",
+            "fastgear>=0.8.3" if not self.use_database else "fastgear[sqlalchemy]>=0.8.3",
             "loguru>=0.7.3",
             "pydantic>=2.12.5",
             "uvicorn>=0.40.0",
