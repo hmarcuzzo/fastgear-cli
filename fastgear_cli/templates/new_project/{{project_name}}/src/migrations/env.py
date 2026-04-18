@@ -5,6 +5,7 @@ from alembic import context
 from fastgear.common.database.sqlalchemy.base import Base
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
+
 from src.core.common.db_connection import get_database_url
 from src.modules.app import app_entities  # noqa: F401
 

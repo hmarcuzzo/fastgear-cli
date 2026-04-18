@@ -1,6 +1,7 @@
 import logging
 
 from fastgear.utils import LoggerUtils as FastgearLoggerUtils
+
 from src.core.constants.enums import EnvironmentOption
 
 
