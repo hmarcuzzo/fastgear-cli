@@ -123,3 +123,4 @@ version_toml = [
 ]
 version_variables = ["fastgear_cli/__init__.py:__version__"]
 vcs_release = true
+build_command = "uv lock && git add uv.lock"
