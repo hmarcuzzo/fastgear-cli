@@ -1,8 +1,9 @@
 name: CD
+run-name: ${{ github.event.workflow_run.display_title }}
 
 on:
   workflow_run:
-    workflows: ["Tests"]
+    workflows: ["CI"]
     types:
       - completed
     branches:
@@ -15,6 +16,8 @@ jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: >
       github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
