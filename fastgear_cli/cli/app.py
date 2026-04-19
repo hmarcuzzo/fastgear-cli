@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -15,13 +15,13 @@ app.add_typer(add_app)
 @app.callback()
 def main_callback(
     version: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option("--version", "-v", is_eager=True, help="Show version and exit"),
     ] = None,
 ) -> None:
     if version:
         typer.echo(f"fg v{__version__}")
-        raise typer.Exit()
+        raise typer.Exit
 
 
 def main():

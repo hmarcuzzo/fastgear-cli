@@ -1,7 +1,6 @@
 from fastgear.common.database.sqlalchemy.session import AsyncDatabaseSessionFactory
 from fastgear.decorators import DBSessionDecorator
 from pydantic_core import MultiHostUrl
-
 from src.config.settings import settings
 
 

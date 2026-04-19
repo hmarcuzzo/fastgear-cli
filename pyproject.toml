@@ -55,6 +55,7 @@ exclude = [
     "buck-out",
     "build",
     "dist",
+    "fastgear_cli/templates",
 ]
 
 [tool.ruff.lint]
