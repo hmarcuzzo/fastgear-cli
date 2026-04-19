@@ -260,12 +260,13 @@ wheels = [
 
 [[package]]
 name = "fastgear-cli"
-version = "0.5.1"
+version = "0.5.2"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "questionary" },
+    { name = "ruff" },
     { name = "typer" },
 ]
 
@@ -273,7 +274,6 @@ dependencies = [
 dev = [
     { name = "pre-commit" },
     { name = "python-semantic-release" },
-    { name = "ruff" },
 ]
 test = [
     { name = "pytest" },
@@ -287,6 +287,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "questionary", specifier = ">=2.1.1" },
+    { name = "ruff", specifier = ">=0.15.0" },
     { name = "typer", specifier = ">=0.21.1" },
 ]
 
@@ -294,7 +295,6 @@ requires-dist = [
 dev = [
     { name = "pre-commit", specifier = ">=4.5.1" },
     { name = "python-semantic-release", specifier = ">=10.5.3" },
-    { name = "ruff", specifier = ">=0.15.0" },
 ]
 test = [
     { name = "pytest", specifier = ">=8.0.0" },
