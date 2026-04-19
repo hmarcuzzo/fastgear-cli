@@ -65,18 +65,21 @@ def run_ruff_format(file_path: Path, project_dir: Path) -> None:
     check_command = [*base_command, "check", "--fix", str(resolved_file_path)]
     format_command = [*base_command, "format", str(resolved_file_path)]
 
+    cwd = project_dir.resolve()
     try:
         subprocess.run(
             check_command,
             check=True,
             capture_output=True,
             text=True,
+            cwd=cwd,
         )
         subprocess.run(
             format_command,
             check=True,
             capture_output=True,
             text=True,
+            cwd=cwd,
         )
     except FileNotFoundError:
         typer.secho(
