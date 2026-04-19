@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastgear.decorators import controller
+
 from src.modules.app.app_schemas import HealthSchema
 from src.modules.app.app_service import AppService
 
