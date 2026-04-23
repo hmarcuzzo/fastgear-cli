@@ -2,17 +2,15 @@ name: Create GitHub Release
 
 on:
   workflow_call:
-    outputs:
-      released:
-        description: "Whether a release was created"
-        value: ${{ jobs.release.outputs.released }}
+    inputs:
+      version:
+        required: true
+        type: string
 
 jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.detect.outputs.release }}
 
     steps:
       - name: Checkout code
@@ -21,27 +19,11 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Detect release trigger
-        id: detect
-        run: |
-          SHA="${{ github.event.workflow_run.head_sha }}"
-          COMMIT_MSG=$(git log -1 --pretty=%B "$SHA")
-          echo "Commit: $COMMIT_MSG"
-
-          if echo "$COMMIT_MSG" | grep -qF "🔖 Release version"; then
-            VERSION=$(echo "$COMMIT_MSG" | grep -oP "(?<=🔖 Release version )\S+")
-            echo "release=true" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "release=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Create GitHub Release
-        if: steps.detect.outputs.release == 'true'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ steps.detect.outputs.version }}
-          name: "${{ steps.detect.outputs.version }}"
+          tag_name: ${{ inputs.version }}
+          name: "${{ inputs.version }}"
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

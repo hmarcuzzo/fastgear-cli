@@ -10,16 +10,50 @@ on:
       - main
 
 jobs:
+  detect:
+    name: Detect Release Trigger
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.detect.outputs.released }}
+      version: ${{ steps.detect.outputs.version }}
+      commit-message: ${{ steps.detect.outputs.commit-message }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: ./.github/actions/detect-release
+        id: detect
+
+  approval:
+    name: Manual Approval
+    needs: detect
+    if: needs.detect.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Wait for approval to deploy
+        uses: trstringer/manual-approval@v1.12.0
+        with:
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: hmarcuzzo
+          minimum-approvals: 1
+          issue-title: ${{ needs.detect.outputs.commit-message }}
+
   release:
     name: Create GitHub Release
-    if: github.event.workflow_run.conclusion == 'success'
+    needs: [detect, approval]
     uses: ./.github/workflows/release.yaml
     permissions:
       contents: write
+    with:
+      version: ${{ needs.detect.outputs.version }}
 
   publish:
     name: Publish to PyPI
     needs: release
-    if: needs.release.outputs.released == 'true'
+    if: needs.release.result == 'success'
     uses: ./.github/workflows/publish.yaml
     secrets: inherit

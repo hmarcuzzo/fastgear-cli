@@ -1,0 +1,32 @@
+name: Detect Release Trigger
+description: Detects if the current commit is a release trigger
+
+outputs:
+  released:
+    description: "Whether this is a release commit"
+    value: ${{ steps.detect.outputs.released }}
+  version:
+    description: "Version to release"
+    value: ${{ steps.detect.outputs.version }}
+  commit-message:
+    description: "The trigger commit message"
+    value: ${{ steps.detect.outputs.commit-message }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect release trigger
+      id: detect
+      shell: bash
+      run: |
+        SHA="${{ github.event.workflow_run.head_sha }}"
+        COMMIT_MSG=$(git log -1 --pretty=%s "$SHA")
+        echo "commit-message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+        if echo "$COMMIT_MSG" | grep -qF "🔖 Release version"; then
+          VERSION=$(echo "$COMMIT_MSG" | grep -oP "(?<=🔖 Release version )\S+")
+          echo "released=true" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        else
+          echo "released=false" >> $GITHUB_OUTPUT
+        fi
