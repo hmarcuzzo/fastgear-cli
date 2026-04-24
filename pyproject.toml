@@ -47,6 +47,69 @@ minversion = "8.0.0"
 addopts = "-ra -q --force-testdox --cov=fastgear_cli --cov-branch --cov-report=xml"
 testpaths = ["tests/"]
 
+# ==== Ruff ====
+[tool.ruff]
+fix = true
+line-length = 100
+indent-width = 4
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "fastgear_cli/templates",
+]
+
+[tool.ruff.lint]
+fixable = ["ALL"]  # Fix all fixable issues
+select = ["ALL"]   # Select all rules available
+extend-select = ["I"]
+ignore = [
+    "A005",
+    "COM812",
+    "C901",
+    "DTZ005",
+    "E501",
+    "FIX002",
+    "F811",
+    "G004",
+    "PLC0415",
+    "PERF203",
+    "PGH003",
+    "N818",
+    "SLF001",
+    "ARG",
+    "ANN",
+    "B",
+    "D",
+    "EM",
+    "FBT",
+    "INP",
+    "RUF",
+    "PLR",
+    "S",
+    "TD",
+    "TRY"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = [
+    "F401",
+    "PLR2004",
+    "PT006",
+    "N806"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
 # ==== Semantic Release ====
 [tool.semantic_release]
 commit_message = """\
