@@ -4,7 +4,6 @@ sample_api/.gitmojirc.json
 sample_api/.pre-commit-config.yaml
 sample_api/README.md
 sample_api/pyproject.toml
-sample_api/ruff.toml
 sample_api/src/__init__.py
 sample_api/src/config/__init__.py
 sample_api/src/config/settings.py
